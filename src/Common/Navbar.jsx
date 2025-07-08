@@ -7,7 +7,7 @@ import { RiMenu2Line } from "react-icons/ri";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const navItems = (
+  const navLinks = (
     <>
       <NavLink
         onClick={() => setIsOpen(false)}
@@ -41,7 +41,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="navbar bg-base-100 shadow-sm relative">
+    <div className="navbar bg-base-100 p-3 shadow-sm relative">
       <div className="navbar-start">
         <div className="md:hidden">
           <button onClick={() => setIsOpen(!isOpen)} className="btn btn-ghost">
@@ -50,12 +50,12 @@ const Navbar = () => {
         </div>
 
         <Link to="/" className="btn btn-ghost text-xl">
-          <img src={logo} alt="TourNest Logo" className="h-11 w-auto" />
+          <img src={logo} alt="TourNest Logo" className="h-12 w-auto" />
         </Link>
       </div>
 
       <div className="navbar-center hidden md:flex">
-        <ul className="menu menu-horizontal px-1">{navItems}</ul>
+        <ul className="menu menu-horizontal px-1">{navLinks}</ul>
       </div>
 
       <div className="navbar-end">
@@ -75,7 +75,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="absolute top-full w-40 -mt-2 left-4 z-10 md:hidden bg-base-100 rounded-box p-2 place-items-center shadow">
           <ul className="menu space-y-2 text-center">
-            {navItems}
+            {navLinks}
             <Link to="/register" onClick={() => setIsOpen(false)}>
               <button className="btn bg-transparent w-full text-primary border-2 border-primary hover:bg-primary hover:text-white">
                 Register
