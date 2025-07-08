@@ -9,7 +9,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { auth } from "../../Firebase/firebase.init";
+import { auth } from "../../../firebase.config";
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope("email");
