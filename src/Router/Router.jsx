@@ -1,12 +1,11 @@
 import { createBrowserRouter } from "react-router";
 import RootLayout from "../Layouts/RootLayout";
-import Home from "../Pages/Home/Home";
-import Navbar from "../Common/Navbar";
 import Community from "../Pages/Community/Community";
 import AboutUs from "../Pages/AboutUs/AboutUs";
 import Trips from "../Pages/Trips/Trips";
 import Register from "../Pages/Authentication/Register";
 import Login from "../Pages/Authentication/Login";
+import Home from "../Pages/Home/Home/Home";
 
 const router = createBrowserRouter([
   {
