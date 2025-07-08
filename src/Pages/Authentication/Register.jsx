@@ -25,6 +25,7 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
     clearErrors,
+    reset,
   } = useForm();
 
   useEffect(() => {
@@ -62,8 +63,7 @@ const Register = () => {
         const imageUrl = res.data.data.url;
 
         createUser(email, password)
-          .then((res) => {
-            console.log(res)
+          .then(() => {
             const userProfile = {
               displayName: name.trim(),
               photoURL: imageUrl,
@@ -73,16 +73,16 @@ const Register = () => {
 
             const userInfo = {
               email,
-              name: name.trim(),
-              image: imageUrl,
               role: "tourist",
               createdAt: new Date().toISOString(),
+              last_log_in: new Date().toISOString(),
             };
 
             axiosInstance.post("/users", userInfo);
 
             toast.success("Registered successfully");
             navigate(location.state || "/");
+            reset();
           })
           .catch((err) => toast.error(err.message))
           .finally(() => setLoading(false));
@@ -100,7 +100,7 @@ const Register = () => {
           <h1 className="text-3xl font-extrabold">Create Your Account</h1>
           <p className="mb-4 text-sm font-semibold">Join TourNest today</p>
 
-        <form onSubmit={handleSubmit(handleRegister)} className="fieldset">
+          <form onSubmit={handleSubmit(handleRegister)} className="fieldset">
             <label htmlFor="profileImage" className="cursor-pointer">
               <img
                 src={preview || userImage}
@@ -217,7 +217,10 @@ const Register = () => {
           </form>
 
           <div className="divider my-4">Or continue with</div>
-          <SocialLogin message="Registration successful" state={location.state} />
+          <SocialLogin
+            message="Registration successful"
+            state={location.state}
+          />
         </div>
       </div>
     </div>

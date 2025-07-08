@@ -18,6 +18,7 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
 
@@ -30,11 +31,11 @@ const Login = () => {
     loginUser(email, password)
       .then(() => {
         toast.success("You logged in successfully");
-
+        reset();
+        
         axiosInstance.post("/users", { email });
 
         navigate(location.state || "/");
-        window.location.reload();
       })
       .catch((error) => {
         toast.error(error.message);
@@ -116,7 +117,7 @@ const Login = () => {
               </Link>
             </p>
           </form>
-                  <div className="divider my-4">Or continue with</div>
+          <div className="divider my-4">Or continue with</div>
           <SocialLogin
             state={location.state}
             message={"You registered successfully"}

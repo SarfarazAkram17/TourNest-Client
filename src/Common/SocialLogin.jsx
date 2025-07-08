@@ -11,19 +11,19 @@ const SocialLogin = ({ state, message }) => {
   const handleGoogleLogin = () => {
     continueWithGoogle()
       .then((res) => {
-        toast.success(message);
-        const email = res.user?.providerData[0]?.email;
-
+          const email = res.user?.providerData[0]?.email;
+          
         const userInfo = {
           email,
-          role: "user", //default role
+          role: "tourist",
           created_at: new Date().toISOString(),
           last_log_in: new Date().toISOString(),
         };
-
+        
         axiosInstance.post("/users", userInfo);
-
+        
         navigate(state || "/");
+        toast.success(message);
       })
       .catch((error) => toast.error(error.message));
   };
