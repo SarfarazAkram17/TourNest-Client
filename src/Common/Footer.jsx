@@ -29,8 +29,8 @@ const Footer = () => {
   );
 
   return (
-    <footer className="bg-base-200 text-base-content mt-10 border-t border-base-300">
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-base-200 mt-10 border-t border-base-300">
+      <div className="px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Logo + Name */}
         <div className="flex flex-col items-center md:items-start">
           <img src={logo} alt="TourNest Logo" className="h-12 mb-2" />
@@ -42,8 +42,8 @@ const Footer = () => {
 
         {/* Navigation Links */}
         <div className="text-center md:text-left">
-          <h3 className="footer-title font-bold">Useful Links</h3>
-          <ul className="mt-2 space-y-1">
+          <h3 className="footer-title font-bold">Quick Links</h3>
+          <ul className="mt-2 space-y-2">
             {navLinks}
           </ul>
         </div>
@@ -53,10 +53,10 @@ const Footer = () => {
           <h3 className="footer-title font-bold">Developer</h3>
           <p className="mt-2 text-sm text-gray-600 font-semibold">Sarfaraz Akram</p>
           <div className="flex justify-center md:justify-start gap-3 mt-4">
-            <a href="https://github.com/yourusername" target="_blank" rel="noreferrer">
+            <a href="https://github.com/SarfarazAkram17" target="_blank" rel="noreferrer">
               <FaGithub size={25} className="hover:text-primary" />
             </a>
-            <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noreferrer">
+            <a href="https://www.linkedin.com/in/sarfarazakram" target="_blank" rel="noreferrer">
               <FaLinkedin size={25} className="hover:text-primary" />
             </a>
           </div>
@@ -64,8 +64,8 @@ const Footer = () => {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-base-300 text-sm text-center py-4">
-        © {new Date().getFullYear()} TourNest. All rights reserved.
+      <div className="border-t-2 border-black/10 text-sm text-center py-4 font-bold">
+        © {new Date().getFullYear()} Tour<span className="text-primary">Nest</span>. All rights reserved.
       </div>
     </footer>
   );
