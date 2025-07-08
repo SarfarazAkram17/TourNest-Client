@@ -6,6 +6,7 @@ import Community from "../Pages/Community/Community";
 import AboutUs from "../Pages/AboutUs/AboutUs";
 import Trips from "../Pages/Trips/Trips";
 import Register from "../Pages/Authentication/Register";
+import Login from "../Pages/Authentication/Login";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "/trips",
         Component: Trips,
+      },
+      {
+        path: "/login",
+        Component: Login,
       },
       {
         path: "/register",
