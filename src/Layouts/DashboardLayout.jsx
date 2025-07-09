@@ -63,7 +63,7 @@ const DashboardLayout = () => {
 
           <li className="my-1">
             <NavLink to="/dashboard" end>
-              <FiHome /> Home
+              <FiHome /> Dashboard Home
             </NavLink>
           </li>
 

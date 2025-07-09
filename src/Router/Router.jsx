@@ -8,6 +8,8 @@ import Login from "../Pages/Authentication/Login";
 import Home from "../Pages/Home/Home/Home";
 import DashboardLayout from "../Layouts/DashboardLayout";
 import PrivateRoute from "../Routes/PrivateRoutes";
+import DashboardHome from "../Pages/Dashboard/DashboardHome/DashboardHome";
+import ManageProfile from "../Pages/Dashboard/ManageProfile/ManageProfile";
 
 const router = createBrowserRouter([
   {
@@ -50,7 +52,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <p>This is default layout.</p>,
+        Component: DashboardHome,
+      },
+      {
+        path: "/dashboard/manageProfile",
+        element: <ManageProfile></ManageProfile>,
       },
     ],
   },
