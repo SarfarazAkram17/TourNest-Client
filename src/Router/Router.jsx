@@ -10,6 +10,7 @@ import DashboardLayout from "../Layouts/DashboardLayout";
 import PrivateRoute from "../Routes/PrivateRoutes";
 import ManageProfile from "../Pages/Dashboard/ManageProfile/ManageProfile";
 import AddPackage from "../Pages/Dashboard/AddPackage/AddPackage";
+import ManageUsers from "../Pages/Dashboard/ManageUsers/ManageUsers";
 
 const router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
       {
         path: '/dashboard/addPackage',
         Component: AddPackage
+      },
+      {
+        path: '/dashboard/manageUsers',
+        Component: ManageUsers
       }
     ],
   },

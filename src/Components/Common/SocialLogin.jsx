@@ -15,6 +15,7 @@ const SocialLogin = ({ state, message }) => {
           
         const userInfo = {
           email,
+          name: res.user.displayName,
           role: "tourist",
           created_at: new Date().toISOString(),
           last_log_in: new Date().toISOString(),

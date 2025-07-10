@@ -73,6 +73,7 @@ const Register = () => {
 
             const userInfo = {
               email,
+              name,
               role: "tourist",
               createdAt: new Date().toISOString(),
               last_log_in: new Date().toISOString(),
