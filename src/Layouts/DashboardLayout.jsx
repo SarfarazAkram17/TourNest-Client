@@ -10,8 +10,13 @@ import {
   FiBarChart2,
 } from "react-icons/fi";
 import Footer from "../Components/Common/Footer";
+import useUserRole from "../Hooks/useUserRole";
+import { MdBookmarkAdded } from "react-icons/md";
+import { FaUserTie } from "react-icons/fa";
 
 const DashboardLayout = () => {
+  const { role, roleLoading } = useUserRole();
+
   return (
     <div className="drawer lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -67,26 +72,8 @@ const DashboardLayout = () => {
           </li>
 
           <li className="my-1">
-            <NavLink to="/dashboard/myAssignedTours">
-              <FiBarChart2 /> My Assigned Tours
-            </NavLink>
-          </li>
-
-          <li className="my-1">
-            <NavLink to="/dashboard/addPackage">
-              <FiFolderPlus /> Add Package
-            </NavLink>
-          </li>
-
-          <li className="my-1">
-            <NavLink to="/dashboard/manageUsers">
-              <FiUsers /> Manage Users
-            </NavLink>
-          </li>
-
-          <li className="my-1">
-            <NavLink to="/dashboard/manageCandidates">
-              <FiClipboard /> Manage Candidates
+            <NavLink to="/dashboard/addStories">
+              <FiPackage /> Add Stories
             </NavLink>
           </li>
 
@@ -96,11 +83,52 @@ const DashboardLayout = () => {
             </NavLink>
           </li>
 
-          <li className="my-1">
-            <NavLink to="/dashboard/addStories">
-              <FiPackage /> Add Stories
-            </NavLink>
-          </li>
+          {!roleLoading && role === "tourist" && (
+            <>
+              <li className="my-1">
+                <NavLink to="/dashboard/myBookings">
+                  <MdBookmarkAdded size={18} /> My Bookings
+                </NavLink>
+              </li>
+              <li className="my-1">
+                <NavLink to="/dashboard/joinAsTourGuide">
+                  <FaUserTie /> Join as tour guide
+                </NavLink>
+              </li>
+            </>
+          )}
+
+          {!roleLoading && role === "tour guide" && (
+            <>
+              <li className="my-1">
+                <NavLink to="/dashboard/myAssignedTours">
+                  <FiBarChart2 /> My Assigned Tours
+                </NavLink>
+              </li>
+            </>
+          )}
+
+          {!roleLoading && role === "admin" && (
+            <>
+              <li className="my-1">
+                <NavLink to="/dashboard/addPackage">
+                  <FiFolderPlus /> Add Package
+                </NavLink>
+              </li>
+
+              <li className="my-1">
+                <NavLink to="/dashboard/manageUsers">
+                  <FiUsers /> Manage Users
+                </NavLink>
+              </li>
+
+              <li className="my-1">
+                <NavLink to="/dashboard/manageCandidates">
+                  <FiClipboard /> Manage Candidates
+                </NavLink>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </div>

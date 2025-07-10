@@ -3,7 +3,7 @@ import loading from "../../assets/animations/loading.json";
 
 const Loading = () => {
   return (
-    <div className="h-screen flex justify-center items-center">
+    <div className="h-[70vh] flex justify-center items-center">
       {" "}
       <Lottie
         animationData={loading}

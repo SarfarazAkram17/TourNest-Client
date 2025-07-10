@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import useAuth from "../../../Hooks/useAuth";
 import Loading from "../../../Components/Loading/Loading";
+import { MdKeyboardDoubleArrowRight, MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
 
 const searchOptions = [
   { value: "name", label: "Search by Name" },
@@ -46,7 +47,6 @@ const ManageUsers = () => {
   const users = data?.users || [];
   const totalPages = Math.ceil((data?.total || 0) / 10);
 
-  // Refetch on every keystroke or delete
   useEffect(() => {
     refetch();
   }, [searchTerm, searchType, roleFilter, page]);
@@ -149,18 +149,43 @@ const ManageUsers = () => {
             </table>
           </div>
 
-          <div className="flex justify-center mt-6 gap-2">
+          <div className="flex flex-wrap justify-center mt-6 gap-2">
+            {/* 🔧 Previous Button with Icon */}
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className={`btn btn-sm ${
+                page === 1 ? "btn-disabled text-black/40" : "btn-primary text-white"
+              }`}
+            >
+              <MdOutlineKeyboardDoubleArrowLeft size={20} />
+            </button>
+
+            {/* Page number buttons */}
             {[...Array(totalPages).keys()].map((n) => (
               <button
                 key={n}
                 onClick={() => handlePageChange(n + 1)}
-                className={`btn btn-sm ${
+                className={`btn btn-sm text-white ${
                   page === n + 1 ? "btn-primary" : "btn-outline"
                 }`}
               >
                 {n + 1}
               </button>
             ))}
+
+            {/* 🔧 Next Button with Icon */}
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages || totalPages === 0}
+              className={`btn btn-sm ${
+                page === totalPages || totalPages === 0
+                  ? "btn-disabled text-black/40"
+                  : "btn-primary text-white"
+              }`}
+            >
+              <MdKeyboardDoubleArrowRight size={20} />
+            </button>
           </div>
         </>
       )}

@@ -29,9 +29,10 @@ const AddPackage = () => {
   const [uploading, setUploading] = useState(false);
   const [imageURLs, setImageURLs] = useState([]);
   const { userEmail } = useAuth();
-
   const axiosSecure = useAxiosSecure();
-  const imgbbKey = import.meta.env.VITE_imgbb_key;
+
+  const cloudName = import.meta.env.VITE_cloudinary_cloud_name;
+  const uploadPreset = import.meta.env.VITE_cloudinary_preset_name;
 
   // Upload images in batches
   const handleImageUpload = async (files) => {
@@ -49,14 +50,15 @@ const AddPackage = () => {
 
       for (let i = 0; i < files.length; i++) {
         const formData = new FormData();
-        formData.append("image", files[i]);
+        formData.append("file", files[i]);
+        formData.append("upload_preset", uploadPreset);
 
         const res = await axios.post(
-          `https://api.imgbb.com/1/upload?key=${imgbbKey}`,
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           formData
         );
 
-        uploaded.push(res.data.data.url);
+        uploaded.push(res.data.secure_url);
       }
 
       setImageURLs((prev) => [...prev, ...uploaded]);

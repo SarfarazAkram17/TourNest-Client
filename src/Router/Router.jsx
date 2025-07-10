@@ -11,6 +11,7 @@ import PrivateRoute from "../Routes/PrivateRoutes";
 import ManageProfile from "../Pages/Dashboard/ManageProfile/ManageProfile";
 import AddPackage from "../Pages/Dashboard/AddPackage/AddPackage";
 import ManageUsers from "../Pages/Dashboard/ManageUsers/ManageUsers";
+import ManageCandidates from "../Pages/Dashboard/ManageCandidates/ManageCandidates";
 
 const router = createBrowserRouter([
   {
@@ -53,16 +54,20 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: ManageProfile
+        Component: ManageProfile,
       },
       {
-        path: '/dashboard/addPackage',
-        Component: AddPackage
+        path: "/dashboard/addPackage",
+        Component: AddPackage,
       },
       {
-        path: '/dashboard/manageUsers',
-        Component: ManageUsers
-      }
+        path: "/dashboard/manageUsers",
+        Component: ManageUsers,
+      },
+      {
+        path: "/dashboard/manageCandidates",
+        Component: ManageCandidates,
+      },
     ],
   },
 ]);

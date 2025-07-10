@@ -43,55 +43,51 @@ const Register = () => {
     }
   };
 
-  const handleRegister = (data) => {
+  const handleRegister = async (data) => {
     setLoading(true);
-
     const { name, email, password } = data;
+
+    // Upload image to Cloudinary
     const imageData = new FormData();
-    imageData.append("image", selectedFile);
+    imageData.append("file", selectedFile);
+    imageData.append("upload_preset", import.meta.env.VITE_cloudinary_preset_name);
 
-    const imgbbKey = import.meta.env.VITE_imgbb_key;
+    try {
+      const imageRes = await axios.post(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_cloudinary_cloud_name}/image/upload`,
+        imageData
+      );
 
-    axios
-      .post(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, imageData)
-      .then((res) => {
-        if (!res.data.success) {
-          toast.error("Image upload failed");
-          return;
-        }
+      const imageUrl = imageRes.data.secure_url;
 
-        const imageUrl = res.data.data.url;
+      // Register user
+      await createUser(email, password);
 
-        createUser(email, password)
-          .then(() => {
-            const userProfile = {
-              displayName: name.trim(),
-              photoURL: imageUrl,
-            };
+      const userProfile = {
+        displayName: name.trim(),
+        photoURL: imageUrl,
+      };
 
-            updateUserProfile(userProfile);
+      await updateUserProfile(userProfile);
 
-            const userInfo = {
-              email,
-              name,
-              role: "tourist",
-              createdAt: new Date().toISOString(),
-              last_log_in: new Date().toISOString(),
-            };
+      const userInfo = {
+        email,
+        name,
+        role: "tourist",
+        createdAt: new Date().toISOString(),
+        last_log_in: new Date().toISOString(),
+      };
 
-            axiosInstance.post("/users", userInfo);
+      await axiosInstance.post("/users", userInfo);
 
-            toast.success("Registered successfully");
-            navigate(location.state || "/");
-            reset();
-          })
-          .catch((err) => toast.error(err.message))
-          .finally(() => setLoading(false));
-      })
-      .catch((err) => {
-        toast.error(err.message);
-        setLoading(false);
-      });
+      toast.success("Registered successfully");
+      navigate(location.state || "/");
+      reset();
+    } catch (err) {
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,7 +97,7 @@ const Register = () => {
           <h1 className="text-3xl font-extrabold">Create Your Account</h1>
           <p className="mb-4 text-sm font-semibold">Join TourNest today</p>
 
-          <form onSubmit={handleSubmit(handleRegister)} className="fieldset">
+          <form onSubmit={handleSubmit(handleRegister)}>
             <label htmlFor="profileImage" className="cursor-pointer">
               <img
                 src={preview || userImage}
