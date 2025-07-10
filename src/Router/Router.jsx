@@ -12,6 +12,7 @@ import ManageProfile from "../Pages/Dashboard/ManageProfile/ManageProfile";
 import AddPackage from "../Pages/Dashboard/AddPackage/AddPackage";
 import ManageUsers from "../Pages/Dashboard/ManageUsers/ManageUsers";
 import ManageCandidates from "../Pages/Dashboard/ManageCandidates/ManageCandidates";
+import JoinAsTourGuide from "../Pages/Dashboard/JoinAsTourGuide/JoinAsTourGuide";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
       {
         path: "/dashboard/manageCandidates",
         Component: ManageCandidates,
+      },
+      {
+        path: "/dashboard/joinAsTourGuide",
+        Component: JoinAsTourGuide,
       },
     ],
   },
