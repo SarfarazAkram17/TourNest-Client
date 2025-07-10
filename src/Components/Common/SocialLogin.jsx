@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-import useAxios from "../Hooks/useAxios";
-import useAuth from "../Hooks/useAuth";
+import useAxios from "../../Hooks/useAxios";
+import useAuth from "../../Hooks/useAuth";
 
 const SocialLogin = ({ state, message }) => {
     const axiosInstance = useAxios();

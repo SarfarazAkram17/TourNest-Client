@@ -8,8 +8,8 @@ import Login from "../Pages/Authentication/Login";
 import Home from "../Pages/Home/Home/Home";
 import DashboardLayout from "../Layouts/DashboardLayout";
 import PrivateRoute from "../Routes/PrivateRoutes";
-import DashboardHome from "../Pages/Dashboard/DashboardHome/DashboardHome";
 import ManageProfile from "../Pages/Dashboard/ManageProfile/ManageProfile";
+import AddPackage from "../Pages/Dashboard/AddPackage/AddPackage";
 
 const router = createBrowserRouter([
   {
@@ -52,12 +52,12 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: DashboardHome,
+        Component: ManageProfile
       },
       {
-        path: "/dashboard/manageProfile",
-        element: <ManageProfile></ManageProfile>,
-      },
+        path: '/dashboard/addPackage',
+        Component: AddPackage
+      }
     ],
   },
 ]);

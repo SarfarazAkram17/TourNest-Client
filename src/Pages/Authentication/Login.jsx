@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import useAxios from "../../Hooks/useAxios";
 import useAuth from "../../Hooks/useAuth";
-import SocialLogin from "../../Common/SocialLogin";
+import SocialLogin from "../../Components/Common/SocialLogin";
 
 const Login = () => {
   const axiosInstance = useAxios();

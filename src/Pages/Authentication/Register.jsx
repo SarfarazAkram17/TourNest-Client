@@ -7,7 +7,7 @@ import userImage from "../../assets/image-upload-icon.png";
 import axios from "axios";
 import useAuth from "../../Hooks/useAuth";
 import useAxios from "../../Hooks/useAxios";
-import SocialLogin from "../../Common/SocialLogin";
+import SocialLogin from "../../Components/Common/SocialLogin";
 
 const Register = () => {
   const axiosInstance = useAxios();

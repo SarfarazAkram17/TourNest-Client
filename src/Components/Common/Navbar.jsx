@@ -1,9 +1,9 @@
 import { Link, NavLink } from "react-router";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 import { RxCross2 } from "react-icons/rx";
 import { useState, useRef, useEffect } from "react";
 import { RiMenu2Line } from "react-icons/ri";
-import useAuth from "../Hooks/useAuth";
+import useAuth from "../../Hooks/useAuth";
 import { toast } from "react-toastify";
 
 const Navbar = () => {

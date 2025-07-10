@@ -1,7 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router";
 import logo from "../assets/logo.png";
 import {
-  FiHome,
   FiUser,
   FiUsers,
   FiPackage,
@@ -10,7 +9,7 @@ import {
   FiFolderPlus,
   FiBarChart2,
 } from "react-icons/fi";
-import Footer from "../Common/Footer";
+import Footer from "../Components/Common/Footer";
 
 const DashboardLayout = () => {
   return (
@@ -43,7 +42,7 @@ const DashboardLayout = () => {
           <div className="mx-2 font-bold px-2">Dashboard</div>
         </div>
 
-        <div className="my-16">
+        <div className="mt-12 mb-16">
           <Outlet></Outlet>
         </div>
         <Footer></Footer>
@@ -63,12 +62,6 @@ const DashboardLayout = () => {
 
           <li className="my-1">
             <NavLink to="/dashboard" end>
-              <FiHome /> Dashboard Home
-            </NavLink>
-          </li>
-
-          <li className="my-1">
-            <NavLink to="/dashboard/manageProfile">
               <FiUser /> Manage Profile
             </NavLink>
           </li>
