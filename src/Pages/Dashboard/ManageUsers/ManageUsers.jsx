@@ -126,7 +126,7 @@ const ManageUsers = () => {
         </p>
       ) : (
         <>
-          <div className="overflow-x-auto border rounded-lg">
+          <div className="overflow-x-auto border border-base-content/5 rounded-lg">
             <table className="table w-full">
               <thead>
                 <tr className="bg-base-200">

@@ -192,7 +192,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary text-white mt-6"
+              className="btn btn-primary w-full text-white mt-6"
             >
               {loading ? (
                 <span className="loading loading-spinner text-primary loading-md"></span>
