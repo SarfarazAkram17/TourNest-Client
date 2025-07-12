@@ -39,6 +39,10 @@ const router = createBrowserRouter([
         Component: AllTrips,
       },
       {
+        path: "/packages/:id",
+        element: <p>pakage details</p>,
+      },
+      {
         path: "/login",
         Component: Login,
       },
