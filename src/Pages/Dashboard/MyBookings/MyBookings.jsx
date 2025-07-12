@@ -92,7 +92,7 @@ const MyBookings = () => {
           </svg>
           <input
             type="search"
-            placeholder="Search by name"
+            placeholder="Search by package name"
             value={searchTerm}
             onChange={handleSearchChange}
           />
@@ -147,13 +147,17 @@ const MyBookings = () => {
                       )}
                     </td>
                     <td>
-                      {b.payment_status === "paid" ? (
+                      {b.payment_status === "not_paid" ? (
+                        b.status === "cancelled" ? (
+                          " - "
+                        ) : (
+                          <span className="text-orange-500 font-medium">
+                            Not Paid
+                          </span>
+                        )
+                      ) : (
                         <span className="text-green-600 font-semibold">
                           Paid
-                        </span>
-                      ) : (
-                        <span className="text-orange-500 font-medium">
-                          Not Paid
                         </span>
                       )}
                     </td>

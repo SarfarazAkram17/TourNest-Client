@@ -124,11 +124,11 @@ const PackageDetails = () => {
       if (res.data.insertedId) {
         Swal.fire({
           title: "Booking Successful!",
-          text: "Your booking has been placed successfully.",
+          text: "Your booking has been placed successfully and redirecting you to the payment page.",
           icon: "success",
-          confirmButtonText: "Go to My Bookings",
+          confirmButtonText: "Going to Payment Page",
         }).then(() => {
-          navigate("/dashboard/myBookings");
+          navigate(`/dashboard/payment/${res.data.insertedId}`);
         });
       }
     } catch (err) {
