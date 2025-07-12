@@ -41,7 +41,7 @@ const ManageUsers = () => {
       });
       return res.data;
     },
-    keepPreviousData: false,
+    keepPreviousData: true,
   });
 
   const users = data?.users || [];

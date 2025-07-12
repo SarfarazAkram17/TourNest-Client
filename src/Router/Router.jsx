@@ -17,6 +17,7 @@ import AdminRoute from "../Routes/AdminRoute";
 import TouristRoute from "../Routes/TouristRoute";
 import Forbidden from "../Pages/Forbidden/Forbidden";
 import PakageDetails from "../Pages/PakageDetails/PakageDetails";
+import MyBookings from "../Pages/Dashboard/MyBookings/MyBookings";
 
 const router = createBrowserRouter([
   {
@@ -67,7 +68,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/dashboard/myBookings",
-        element: <p>this is my bookings page</p>,
+        Component: MyBookings
       },
       {
         path: "/dashboard/addPackage",
