@@ -9,7 +9,7 @@ const Overview = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">
             Experience Bangladesh Like Never Before
           </h2>
-          <p className="text-gray-700 text-lg mb-6">
+          <p className="text-gray-700 mb-6">
             TourNest is your gateway to discovering the real Bangladesh — from its timeless heritage to its vibrant local life. Partnering with trusted local guides, we bring you personalized adventures that go beyond tourist spots.
           </p>
           <ul className="space-y-2 text-sm text-gray-600 list-disc list-inside">

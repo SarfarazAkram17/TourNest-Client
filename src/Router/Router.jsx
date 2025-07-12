@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router";
 import RootLayout from "../Layouts/RootLayout";
 import Community from "../Pages/Community/Community";
 import AboutUs from "../Pages/AboutUs/AboutUs";
-import Trips from "../Pages/Trips/Trips";
+import AllTrips from "../Pages/AllTrips/AllTrips";
 import Register from "../Pages/Authentication/Register";
 import Login from "../Pages/Authentication/Login";
 import Home from "../Pages/Home/Home/Home";
@@ -13,6 +13,9 @@ import AddPackage from "../Pages/Dashboard/AddPackage/AddPackage";
 import ManageUsers from "../Pages/Dashboard/ManageUsers/ManageUsers";
 import ManageCandidates from "../Pages/Dashboard/ManageCandidates/ManageCandidates";
 import JoinAsTourGuide from "../Pages/Dashboard/JoinAsTourGuide/JoinAsTourGuide";
+import AdminRoute from "../Routes/AdminRoute";
+import TouristRoute from "../Routes/TouristRoute";
+import Forbidden from "../Pages/Forbidden/Forbidden";
 
 const router = createBrowserRouter([
   {
@@ -32,8 +35,8 @@ const router = createBrowserRouter([
         Component: AboutUs,
       },
       {
-        path: "/trips",
-        Component: Trips,
+        path: "/allTrips",
+        Component: AllTrips,
       },
       {
         path: "/login",
@@ -59,21 +62,41 @@ const router = createBrowserRouter([
       },
       {
         path: "/dashboard/addPackage",
-        Component: AddPackage,
+        element: (
+          <AdminRoute>
+            <AddPackage></AddPackage>
+          </AdminRoute>
+        ),
       },
       {
         path: "/dashboard/manageUsers",
-        Component: ManageUsers,
+        element: (
+          <AdminRoute>
+            <ManageUsers></ManageUsers>
+          </AdminRoute>
+        ),
       },
       {
         path: "/dashboard/manageCandidates",
-        Component: ManageCandidates,
+        element: (
+          <AdminRoute>
+            <ManageCandidates></ManageCandidates>
+          </AdminRoute>
+        ),
       },
       {
         path: "/dashboard/joinAsTourGuide",
-        Component: JoinAsTourGuide,
+        element: (
+          <TouristRoute>
+            <JoinAsTourGuide></JoinAsTourGuide>
+          </TouristRoute>
+        ),
       },
     ],
+  },
+  {
+    path: "/forbidden",
+    Component: Forbidden,
   },
 ]);
 

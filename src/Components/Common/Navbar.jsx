@@ -37,9 +37,9 @@ const Navbar = () => {
       <NavLink
         onClick={() => setIsOpen(false)}
         className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/trips"
+        to="/allTrips"
       >
-        Trips
+       All Trips
       </NavLink>
     </>
   );

@@ -1,15 +1,15 @@
 import axios from "axios";
-// import useAuth from "./useAuth";
-// import { toast } from "react-toastify";
+import useAuth from "./useAuth";
 import { useEffect } from "react";
-import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 const axiosSecure = axios.create({
   baseURL: "http://localhost:3000",
 });
 
 const useAxiosSecure = () => {
-//   const { logOutUser } = useAuth();
+  const { logOutUser } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const requestInterceptor = axiosSecure.interceptors.request.use(
@@ -27,18 +27,14 @@ const useAxiosSecure = () => {
       (response) => response,
       async (error) => {
         const status = error?.response?.status;
-        toast.error(status)
 
-        // if (status === 401 || status === 403) {
-        //   toast.error("Session expired or unauthorized. Logging out.");
-        //   try {
-        //     await logOutUser();
-        //   } catch (e) {
-        //     console.error("Logout failed", e);
-        //   } finally {
-        //     Optional: window.location.href = "/login";
-        //   }
-        // }
+        if (status === 401) {
+          logOutUser();
+          navigate("/login");
+        }
+        if (status === 403) {
+          navigate("/forbidden");
+        }
 
         return Promise.reject(error);
       }
@@ -48,8 +44,7 @@ const useAxiosSecure = () => {
       axiosSecure.interceptors.request.eject(requestInterceptor);
       axiosSecure.interceptors.response.eject(responseInterceptor);
     };
-  }, []);
-// logOutUser 
+  }, [logOutUser, navigate]);
   return axiosSecure;
 };
 

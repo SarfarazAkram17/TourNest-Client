@@ -16,9 +16,10 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope("email");
 
 const AuthProvider = ({ children }) => {
-  const axiosInstance = useAxios()
+  const axiosInstance = useAxios();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
   const userEmail = user?.email || user?.providerData?.[0]?.email || "";
   const uid = user?.uid || "";
 
@@ -44,6 +45,7 @@ const AuthProvider = ({ children }) => {
   const logOutUser = () => {
     setLoading(true);
     localStorage.removeItem("token");
+    setToken(null)
     return signOut(auth);
   };
 
@@ -60,12 +62,15 @@ const AuthProvider = ({ children }) => {
 
           if (res.data.token) {
             localStorage.setItem("token", res.data.token);
+            setToken(res.data.token);
           }
         } catch (err) {
           localStorage.removeItem("token");
+          setToken(null)
         }
       } else {
         localStorage.removeItem("token");
+        setToken(null)
       }
     });
 
@@ -77,6 +82,7 @@ const AuthProvider = ({ children }) => {
     uid,
     userEmail,
     loading,
+    token,
     createUser,
     loginUser,
     updateUserProfile,
