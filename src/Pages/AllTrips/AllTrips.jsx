@@ -14,42 +14,57 @@ const AllTrips = () => {
     },
   });
 
-  if (isLoading) {
-    return <Loading></Loading>;
-  }
+  if (isLoading) return <Loading />;
 
   return (
-    <div className="max-w-6xl mx-auto py-16 px-4">
-      <h2 className="text-3xl font-bold mb-8 text-center text-primary">
-        All Trips
+    <div className="max-w-7xl mx-auto py-16 px-4 md:px-6 lg:px-8">
+      <h2 className="text-4xl font-bold mb-4 text-center text-primary">
+        Explore All Trips
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {packages.map((pkg) => (
-          <div key={pkg._id} className="card shadow-xl bg-base-100">
-            <figure>
-              <img
-                src={pkg.images?.[0]}
-                alt={pkg.title}
-                className="h-52 w-full object-cover"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title text-xl font-bold">{pkg.title}</h2>
-              <p className="text-sm text-gray-600">Location: {pkg.location}</p>
-              <p className="text-sm">Type: {pkg.tourType}</p>
-              <p className="text-sm font-semibold">Price: ৳{pkg.price}</p>
-              <div className="card-actions justify-end mt-4">
-                <Link
-                  to={`/packages/${pkg._id}`}
-                  className="btn btn-primary text-white text-sm px-4"
-                >
-                  View Details
+      <p className="text-center text-gray-600 max-w-2xl mx-auto mb-10 text-sm md:text-base">
+        Discover a curated selection of travel experiences across Bangladesh and
+        beyond. Whether you're looking for adventure, relaxation, or cultural
+        exploration, our tour packages offer something for every kind of
+        traveler.
+      </p>
+
+      {packages.length === 0 ? (
+        <p className="text-center text-gray-500">No packages available.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {packages.map((pkg) => (
+            <div
+              key={pkg._id}
+              className="bg-white border border-gray-100 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
+            >
+              <div className="h-52 overflow-hidden rounded-t-xl">
+                <img
+                  src={pkg.images?.[0]}
+                  alt={pkg.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-4 space-y-4">
+                <h3 className="text-xl font-semibold">{pkg.title}</h3>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Location:</span> {pkg.location}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Type:</span> {pkg.tourType}
+                </p>
+                <p className="text-sm text-gray-700 font-semibold">
+                  ৳{pkg.price.toLocaleString("en-BD")}
+                </p>
+                <Link to={`/packages/${pkg._id}`}>
+                  <button className="btn btn-sm btn-primary text-white w-full">
+                    View Details
+                  </button>
                 </Link>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

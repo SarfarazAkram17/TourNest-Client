@@ -84,7 +84,7 @@ const ManageCandidates = () => {
         try {
           const res = await axiosSecure.patch(
             `/applications?email=${userEmail}`,
-            { role: "tour guide", candidateEmail: candidate.email }
+            { role: "tour guide", candidate }
           );
 
           if (res.data.modifiedCount > 0) {

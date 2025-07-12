@@ -72,6 +72,7 @@ const JoinAsTourGuide = () => {
       languages: data.languages.split(",").map((lang) => lang.trim()),
       bio: data.bio,
       age: parseInt(data.age, 10),
+      photo: user?.photoURL,
       status: "pending",
       createdAt: new Date().toISOString(),
     };

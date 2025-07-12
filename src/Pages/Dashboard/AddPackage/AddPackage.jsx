@@ -15,7 +15,7 @@ const AddPackage = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      tourPlan: [{ day: "", activities: "" }],
+      tourPlan: [{ day: "Day 1", activities: "" }],
     },
     mode: "onChange",
   });
@@ -34,7 +34,6 @@ const AddPackage = () => {
   const cloudName = import.meta.env.VITE_cloudinary_cloud_name;
   const uploadPreset = import.meta.env.VITE_cloudinary_preset_name;
 
-  // Upload images in batches
   const handleImageUpload = async (files) => {
     if (!files.length) return;
 
@@ -189,7 +188,6 @@ const AddPackage = () => {
           </p>
         )}
 
-        {/* Image Upload Input + Previews */}
         <div>
           <label className="font-semibold block mb-1">
             Upload Images (5–10)
@@ -226,7 +224,6 @@ const AddPackage = () => {
           </p>
         </div>
 
-        {/* Tour Plan Inputs */}
         <div className="mt-4">
           <label className="block font-semibold mb-2">Tour Plan</label>
           {fields.map((field, index) => (
@@ -239,6 +236,8 @@ const AddPackage = () => {
                 placeholder={`Day ${index + 1}`}
                 className="input input-bordered w-full"
                 {...register(`tourPlan.${index}.day`, { required: true })}
+                value={`Day ${index + 1}`}
+                readOnly
               />
               <textarea
                 placeholder="Activities"
@@ -258,7 +257,7 @@ const AddPackage = () => {
           ))}
           <button
             type="button"
-            onClick={() => append({ day: "", activities: "" })}
+            onClick={() => append({ day: `Day ${fields.length + 1}`, activities: "" })}
             className="btn btn-sm btn-outline btn-primary"
           >
             + Add Day

@@ -16,6 +16,7 @@ import JoinAsTourGuide from "../Pages/Dashboard/JoinAsTourGuide/JoinAsTourGuide"
 import AdminRoute from "../Routes/AdminRoute";
 import TouristRoute from "../Routes/TouristRoute";
 import Forbidden from "../Pages/Forbidden/Forbidden";
+import PakageDetails from "../Pages/PakageDetails/PakageDetails";
 
 const router = createBrowserRouter([
   {
@@ -40,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/packages/:id",
-        element: <p>pakage details</p>,
+        Component: PakageDetails,
       },
       {
         path: "/login",
