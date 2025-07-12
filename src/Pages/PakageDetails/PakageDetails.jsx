@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "../../Hooks/useAxios";
 import useAuth from "../../Hooks/useAuth";
@@ -9,35 +9,19 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Swal from "sweetalert2";
 import Select from "react-select";
-
-// Custom styles for react-select to fix height matching with inputs
-const customSelectStyles = {
-  control: (provided) => ({
-    ...provided,
-    minHeight: "2.75rem",    // ~44px, matches Tailwind input height
-    height: "2.75rem",
-    boxShadow: "none",
-  }),
-  valueContainer: (provided) => ({
-    ...provided,
-    height: "2.75rem",
-    padding: "0 0.75rem",
-  }),
-  indicatorsContainer: (provided) => ({
-    ...provided,
-    height: "2.75rem",
-  }),
-};
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 const PackageDetails = () => {
   const { id } = useParams();
+  const axiosSecure = useAxiosSecure();
   const axiosInstance = useAxios();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const location = useLocation();
+  const { user, userEmail } = useAuth();
   const [selectedDate, setSelectedDate] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch package data
-  const { data: pkg, isLoading: pkgLoading } = useQuery({
+  const { data: pkg, isLoading } = useQuery({
     queryKey: ["package", id],
     queryFn: async () => {
       const res = await axiosInstance.get(`/packages/${id}`);
@@ -45,8 +29,7 @@ const PackageDetails = () => {
     },
   });
 
-  // Fetch tour guides data with useQuery
-  const { data: guides = [], isLoading: guidesLoading } = useQuery({
+  const { data: guides = [], isLoading: guideLoading } = useQuery({
     queryKey: ["tour-guides"],
     queryFn: async () => {
       const res = await axiosInstance.get("/users/tour-guide");
@@ -62,23 +45,26 @@ const PackageDetails = () => {
     formState: { errors },
   } = useForm();
 
-  // Register tourGuide manually for react-hook-form validation
+  const watchTourGuide = watch("tourGuide");
+
   useEffect(() => {
-    register("tourGuide", { required: true });
+    register("tourGuide", { required: "Tour Guide is required" });
+    register("tourDate", { required: "Tour date is required" });
   }, [register]);
 
-  // Set initial form values when pkg and user available
   useEffect(() => {
     if (pkg && user) {
       setValue("packageName", pkg.title);
       setValue("touristName", user.displayName);
       setValue("touristEmail", user.email);
       setValue("touristImage", user.photoURL);
+      setValue("tourPrice", pkg.price);
     }
   }, [pkg, user, setValue]);
 
-  // Watch tourGuide for React Select control
-  const watchTourGuide = watch("tourGuide");
+  useEffect(() => {
+    setValue("tourDate", selectedDate);
+  }, [selectedDate, setValue]);
 
   const onSubmit = async (data) => {
     if (!user) {
@@ -87,9 +73,15 @@ const PackageDetails = () => {
         "Please login to book this package.",
         "warning"
       );
-      navigate("/login");
+      navigate("/login", { state: location.pathname });
       return;
     }
+
+    const tourGuideName = data.tourGuide.split(" - ")[0];
+    const tourGuideEmail = data.tourGuide.split(" - ")[1];
+    const selectedGuide = guides.find(
+      (g) => g.guideInfo.email === tourGuideEmail
+    );
 
     const bookingData = {
       packageId: id,
@@ -98,46 +90,76 @@ const PackageDetails = () => {
       touristEmail: user.email,
       touristImage: user.photoURL,
       price: pkg.price,
-      tourDate: selectedDate,
-      tourGuide: data.tourGuide,
+      tourDate: data.tourDate,
+      tourGuideName,
+      tourGuideImage: selectedGuide.guideInfo.photo,
+      tourGuideEmail,
       status: "pending",
+      bookingAt: new Date().toISOString(),
+      payment_status: "not_paid",
     };
 
+    // Confirmation Prompt
+    const confirmResult = await Swal.fire({
+      title: "Confirm Booking",
+      text: "Are you sure you want to book this package?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Book Now",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
+    // Proceed with booking if confirmed
     try {
-      await axiosInstance.post("/bookings", bookingData);
-      Swal.fire({
-        title: "Confirm your Booking",
-        text: "Booking request sent successfully!",
-        icon: "success",
-        confirmButtonText: "Go to My Bookings",
-      }).then((result) => {
-        if (result.isConfirmed) {
+      setLoading(true);
+      const res = await axiosSecure.post(
+        `/bookings?email=${userEmail}`,
+        bookingData
+      );
+
+      if (res.data.insertedId) {
+        Swal.fire({
+          title: "Booking Successful!",
+          text: "Your booking has been placed successfully.",
+          icon: "success",
+          confirmButtonText: "Go to My Bookings",
+        }).then(() => {
           navigate("/dashboard/myBookings");
-        }
-      });
+        });
+      }
     } catch (err) {
-      Swal.fire(err.message, "Failed to book the package", "error");
+      if (err.response?.status === 409) {
+        Swal.fire(
+          "Booking Denied",
+          "You already booked this package and haven’t paid yet.",
+          "error"
+        );
+      } else {
+        Swal.fire("Error", "Something went wrong while booking.", "error");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (pkgLoading || guidesLoading) return <Loading />;
+  if (isLoading || guideLoading) return <Loading />;
   if (!pkg)
     return <p className="text-center text-gray-500">Package not found.</p>;
 
-  // Prepare options for React Select
   const guideOptions = guides.map((g) => ({
-    value: g.guideInfo.email,
+    value: `${g.guideInfo.name} - ${g.guideInfo.email}`,
     label: `${g.guideInfo.name} - ${g.guideInfo.email}`,
   }));
 
-  // Find currently selected option for React Select to show
-  const selectedGuideOption = guideOptions.find(
-    (option) => option.value === watchTourGuide
-  ) || null;
+  const selectedGuideOption =
+    guideOptions.find((option) => option.value === watchTourGuide) || null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-16">
-      {/* Title & Short Description */}
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-primary mb-3">{pkg.title}</h1>
         <p className="text-gray-600 text-sm md:text-base max-w-3xl mx-auto">
@@ -145,7 +167,6 @@ const PackageDetails = () => {
         </p>
       </div>
 
-      {/* Gallery Section */}
       <div className="grid grid-cols-3 md:grid-cols-6 grid-rows-2 gap-3 md:gap-4 mb-12 h-[450px]">
         {pkg.images[0] && (
           <img
@@ -187,12 +208,11 @@ const PackageDetails = () => {
             key={idx + 5}
             src={img}
             alt={`Gallery ${idx + 6}`}
-            className="hidden md:block col-span-1 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
+            className="col-span-1 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
           />
         ))}
       </div>
 
-      {/* Info Sections */}
       <div className="grid md:grid-cols-2 gap-10 mb-12">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-primary">
@@ -221,10 +241,9 @@ const PackageDetails = () => {
         </div>
       </div>
 
-      {/* Tour Plan */}
       <div className="mb-12">
         <h2 className="text-2xl font-semibold text-primary mb-5">Tour Plan</h2>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-4">
           {pkg.tourPlan.map((plan, i) => (
             <div
               key={i}
@@ -241,7 +260,6 @@ const PackageDetails = () => {
         </div>
       </div>
 
-      {/* Tour Guide List */}
       <div className="mb-10">
         <h2 className="text-2xl font-semibold text-primary mb-5">
           Meet Our Tour Guides
@@ -272,88 +290,106 @@ const PackageDetails = () => {
         </div>
       </div>
 
-      {/* Booking Form */}
-      <div className="border-t pt-8">
+      <div className="divider"></div>
+
+      <div className="mt-10">
         <h2 className="text-3xl text-center font-semibold text-primary mb-8">
           Book This Package
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-6 items-center">
-            <div>
-              <label className="block mb-1 text-sm">Package Name</label>
+          <div className="grid sm:grid-cols-2 gap-6 items-start">
+            <div className="fieldset">
+              <label className="block text-sm">Package Name</label>
               <input
                 type="text"
                 readOnly
                 {...register("packageName")}
-                className="input input-bordered w-full h-11"
-                placeholder="Package Name"
+                className="input input-bordered w-full h-10"
               />
             </div>
-            <div>
-              <label className="block mb-1 text-sm">Tourist Name</label>
+            <div className="fieldset">
+              <label className="block text-sm">Tourist Name</label>
               <input
                 type="text"
                 readOnly
                 {...register("touristName")}
-                className="input input-bordered w-full h-11"
-                placeholder="Tourist Name"
+                className="input input-bordered w-full h-10"
               />
             </div>
-            <div>
-              <label className="block mb-1 text-sm">Tourist Email</label>
+            <div className="fieldset">
+              <label className="block text-sm">Tourist Email</label>
               <input
                 type="email"
                 readOnly
                 {...register("touristEmail")}
-                className="input input-bordered w-full h-11"
-                placeholder="Tourist Email"
+                className="input input-bordered w-full h-10"
               />
             </div>
-            <div>
-              <label className="block mb-1 text-sm">Tourist Picture URL</label>
+            <div className="fieldset">
+              <label className="block text-sm">Tourist Picture URL</label>
               <input
                 type="text"
                 readOnly
                 {...register("touristImage")}
-                className="input input-bordered w-full h-11"
-                placeholder="Image URL"
+                className="input input-bordered w-full h-10"
               />
             </div>
             <div className="fieldset">
-              <label className="block -mb-[2.8px] text-sm">Tour Date</label>
+              <label className="block text-sm">Tour Price</label>
+              <input
+                type="number"
+                readOnly
+                {...register("tourPrice")}
+                className="input input-bordered w-full h-10"
+              />
+            </div>
+            <div className="fieldset">
+              <label className="block text-sm">Tour Date</label>
               <DatePicker
                 selected={selectedDate}
                 onChange={(date) => setSelectedDate(date)}
-                className="input input-bordered w-full h-11"
+                className="input input-bordered w-full h-10"
+                minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
                 placeholderText="Pick a Date"
-                required
+                filterDate={(date) => date > new Date()}
               />
+              {errors.tourDate && (
+                <p className="text-red-500 font-semibold text-xs mt-1">
+                  {errors.tourDate.message}
+                </p>
+              )}
             </div>
-            <div className="w-full">
-              <label className="block mb-1 text-sm">Select Tour Guide</label>
+            <div className="fieldset sm:col-span-2">
+              <label className="block text-sm">Select Tour Guide</label>
               <Select
                 options={guideOptions}
                 value={selectedGuideOption}
-                onChange={(selectedOption) => {
-                  setValue("tourGuide", selectedOption ? selectedOption.value : "");
-                }}
+                onChange={(selectedOption) =>
+                  setValue(
+                    "tourGuide",
+                    selectedOption ? selectedOption.value : ""
+                  )
+                }
                 placeholder="Select a guide"
                 isClearable
-                classNamePrefix="react-select"
-                styles={customSelectStyles}
               />
               {errors.tourGuide && (
-                <p className="text-red-500 text-xs mt-1">
-                  Please select a tour guide
+                <p className="text-red-500 font-semibold text-xs mt-1">
+                  {errors.tourGuide.message}
                 </p>
               )}
             </div>
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="btn btn-primary text-white w-full mt-10"
           >
-            Book Now
+            {loading ? (
+              <span className="loading loading-spinner text-primary"></span>
+            ) : (
+              "Book Now"
+            )}
           </button>
         </form>
       </div>

@@ -72,6 +72,12 @@ const DashboardLayout = () => {
           </li>
 
           <li className="my-1">
+            <NavLink to="/dashboard/myBookings">
+              <MdBookmarkAdded size={18} /> My Bookings
+            </NavLink>
+          </li>
+
+          <li className="my-1">
             <NavLink to="/dashboard/addStories">
               <FiPackage /> Add Stories
             </NavLink>
@@ -85,11 +91,6 @@ const DashboardLayout = () => {
 
           {!roleLoading && role === "tourist" && (
             <>
-              <li className="my-1">
-                <NavLink to="/dashboard/myBookings">
-                  <MdBookmarkAdded size={18} /> My Bookings
-                </NavLink>
-              </li>
               <li className="my-1">
                 <NavLink to="/dashboard/joinAsTourGuide">
                   <FaUserTie /> Join as tour guide

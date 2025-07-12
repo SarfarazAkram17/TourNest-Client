@@ -118,7 +118,7 @@ const ManageProfile = () => {
           <img
             src={user?.photoURL}
             alt="Profile"
-            className="w-36 h-36 rounded-full object-cover border-4 border-primary shadow"
+            className="w-40 h-40 rounded-full object-cover border-4 border-primary shadow"
           />
           <div className="flex-1 space-y-3">
             <p>
@@ -126,6 +126,10 @@ const ManageProfile = () => {
             </p>
             <p>
               <span className="font-semibold">Email:</span> {userEmail}
+            </p>
+            <p>
+              <span className="font-semibold">Role:</span>{" "}
+              {!roleLoading && role}
             </p>
             <button
               onClick={handleEditClick}

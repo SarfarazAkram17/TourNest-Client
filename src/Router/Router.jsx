@@ -66,6 +66,10 @@ const router = createBrowserRouter([
         Component: ManageProfile,
       },
       {
+        path: "/dashboard/myBookings",
+        element: <p>this is my bookings page</p>,
+      },
+      {
         path: "/dashboard/addPackage",
         element: (
           <AdminRoute>

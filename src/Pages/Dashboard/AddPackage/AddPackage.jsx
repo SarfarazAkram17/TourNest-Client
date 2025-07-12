@@ -38,8 +38,8 @@ const AddPackage = () => {
     if (!files.length) return;
 
     const totalImages = imageURLs.length + files.length;
-    if (totalImages > 10) {
-      toast.error("You can upload a maximum of 10 images.");
+    if (totalImages > 5) {
+      toast.error("You can upload a maximum of 5 images.");
       return;
     }
 
@@ -74,8 +74,8 @@ const AddPackage = () => {
   };
 
   const handleAddPakage = async (data) => {
-    if (imageURLs.length < 5) {
-      toast.error("Please upload at least 5 images before submitting.");
+    if (imageURLs.length !== 5) {
+      toast.error("Please upload exactly 5 images before submitting.");
       return;
     }
 
@@ -189,9 +189,7 @@ const AddPackage = () => {
         )}
 
         <div>
-          <label className="font-semibold block mb-1">
-            Upload Images (5–10)
-          </label>
+          <label className="font-semibold block mb-1">Upload (5) Images</label>
           <input
             ref={fileInputRef}
             type="file"
@@ -199,7 +197,7 @@ const AddPackage = () => {
             multiple
             onChange={(e) => handleImageUpload(e.target.files)}
             className="file-input file-input-bordered w-full"
-            disabled={uploading || imageURLs.length >= 10}
+            disabled={uploading || imageURLs.length >= 5}
           />
           <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mt-2">
             {imageURLs.map((url, i) => (
@@ -220,7 +218,9 @@ const AddPackage = () => {
             ))}
           </div>
           <p className="text-sm text-gray-600 mt-1">
-            Uploaded: {imageURLs.length} / 10
+            {imageURLs.length === 5
+              ? "You have uploaded 5 images."
+              : `Uploaded: ${imageURLs.length} / 5`}
           </p>
         </div>
 
@@ -257,7 +257,9 @@ const AddPackage = () => {
           ))}
           <button
             type="button"
-            onClick={() => append({ day: `Day ${fields.length + 1}`, activities: "" })}
+            onClick={() =>
+              append({ day: `Day ${fields.length + 1}`, activities: "" })
+            }
             className="btn btn-sm btn-outline btn-primary"
           >
             + Add Day
@@ -267,7 +269,7 @@ const AddPackage = () => {
         <div className="flex justify-end">
           <button
             className="btn btn-primary text-white"
-            disabled={loading || uploading}
+            disabled={loading || uploading || imageURLs.length !== 5}
             type="submit"
           >
             {uploading || loading ? (
