@@ -51,7 +51,7 @@ const MyBookings = () => {
       const timer = setTimeout(() => {
         setShowConfetti(false);
         setShowCongrats(false);
-      }, 7000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [bookings]);

@@ -15,10 +15,12 @@ import ManageCandidates from "../Pages/Dashboard/ManageCandidates/ManageCandidat
 import JoinAsTourGuide from "../Pages/Dashboard/JoinAsTourGuide/JoinAsTourGuide";
 import AdminRoute from "../Routes/AdminRoute";
 import TouristRoute from "../Routes/TouristRoute";
+import TourGuideRoute from "../Routes/TourGuideRoute";
 import Forbidden from "../Pages/Forbidden/Forbidden";
 import PakageDetails from "../Pages/PakageDetails/PakageDetails";
 import MyBookings from "../Pages/Dashboard/MyBookings/MyBookings";
 import Payment from "../Pages/Dashboard/Payment/Payment";
+import MyAssignedTours from "../Pages/Dashboard/MyAssignedTours/MyAssignedTours";
 
 const router = createBrowserRouter([
   {
@@ -68,15 +70,15 @@ const router = createBrowserRouter([
         Component: ManageProfile,
       },
       {
-        path: "/dashboard/myBookings",
-        Component: MyBookings
+        path: "myBookings",
+        Component: MyBookings,
       },
       {
-        path: "/dashboard/payment/:bookingId",
-        Component: Payment
+        path: "payment/:bookingId",
+        Component: Payment,
       },
       {
-        path: "/dashboard/addPackage",
+        path: "addPackage",
         element: (
           <AdminRoute>
             <AddPackage></AddPackage>
@@ -84,7 +86,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/dashboard/manageUsers",
+        path: "manageUsers",
         element: (
           <AdminRoute>
             <ManageUsers></ManageUsers>
@@ -92,7 +94,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/dashboard/manageCandidates",
+        path: "manageCandidates",
         element: (
           <AdminRoute>
             <ManageCandidates></ManageCandidates>
@@ -100,11 +102,20 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/dashboard/joinAsTourGuide",
+        path: "joinAsTourGuide",
         element: (
           <TouristRoute>
             <JoinAsTourGuide></JoinAsTourGuide>
           </TouristRoute>
+        ),
+      },
+
+      {
+        path: "myAssignedTours",
+        element: (
+          <TourGuideRoute>
+            <MyAssignedTours></MyAssignedTours>
+          </TourGuideRoute>
         ),
       },
     ],

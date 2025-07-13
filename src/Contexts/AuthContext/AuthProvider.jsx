@@ -11,11 +11,13 @@ import {
 } from "firebase/auth";
 import { auth } from "../../../firebase.config";
 import useAxios from "../../Hooks/useAxios";
+import { useQueryClient } from "@tanstack/react-query";
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope("email");
 
 const AuthProvider = ({ children }) => {
+  const queryClient = useQueryClient();
   const axiosInstance = useAxios();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,8 @@ const AuthProvider = ({ children }) => {
   const logOutUser = () => {
     setLoading(true);
     localStorage.removeItem("token");
-    setToken(null)
+    setToken(null);
+    queryClient.clear();
     return signOut(auth);
   };
 
@@ -66,11 +69,11 @@ const AuthProvider = ({ children }) => {
           }
         } catch (err) {
           localStorage.removeItem("token");
-          setToken(null)
+          setToken(null);
         }
       } else {
         localStorage.removeItem("token");
-        setToken(null)
+        setToken(null);
       }
     });
 

@@ -71,21 +71,17 @@ const DashboardLayout = () => {
             </NavLink>
           </li>
 
-          {!roleLoading && role === "tourist" && (
-            <>
-              <li className="my-1">
-                <NavLink to="/dashboard/myBookings">
-                  <MdBookmarkAdded size={18} /> My Bookings
-                </NavLink>
-              </li>
-            </>
-          )}
+          <li className="my-1">
+            <NavLink to="/dashboard/myBookings">
+              <MdBookmarkAdded size={18} /> My Bookings
+            </NavLink>
+          </li>
 
           {!roleLoading && role === "tour guide" && (
             <>
               <li className="my-1">
                 <NavLink to="/dashboard/myAssignedTours">
-                  <FiBarChart2 /> My Assigned Tours
+                  <FiBarChart2 size={17} /> My Assigned Tours
                 </NavLink>
               </li>
             </>
