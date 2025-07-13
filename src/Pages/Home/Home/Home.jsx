@@ -4,6 +4,7 @@ import Overview from '../Overview/Overview';
 import TourismTravelGuideSection from '../TourismTravelGuideSection/TourismTravelGuideSection/TourismTravelGuideSection';
 import Faq from '../Faq/Faq';
 import TravelTips from '../TravelTips/TravelTips';
+import WhyChooseUs from '../WhyChooseUs/WhyChooseUs';
 
 const Home = () => {
     return (
@@ -11,6 +12,7 @@ const Home = () => {
             <Banner />
             <Overview />
             <TourismTravelGuideSection />
+            <WhyChooseUs />
             <TravelTips />
             <Faq />
         </div>

@@ -268,7 +268,7 @@ const PackageDetails = () => {
           {guides.map((guide) => (
             <div
               key={guide._id}
-              className="bg-white border shadow-sm rounded-lg py-3 px-6 space-y-2 text-center"
+              className="bg-white border border-black/50 shadow-sm rounded-lg py-3 px-6 space-y-2 text-center"
             >
               <img
                 src={guide.guideInfo.photo}
