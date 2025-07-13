@@ -90,7 +90,7 @@ const Navbar = () => {
         </div>
 
         <Link to="/" className="ml-2">
-          <img src={logo} alt="TourNest Logo" className="h-12 w-auto" />
+          <img src={logo} alt="TourNest Logo" className="h-10 sm:h-12 w-auto" />
         </Link>
       </div>
 

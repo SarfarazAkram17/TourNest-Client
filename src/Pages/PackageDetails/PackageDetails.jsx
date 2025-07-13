@@ -280,7 +280,7 @@ const PackageDetails = () => {
               </h3>
               <p className="text-sm text-gray-600">{guide.guideInfo.email}</p>
               <button
-                onClick={() => navigate(`/guide/${guide._id}`)}
+                onClick={() => navigate(`/tourGuide/${guide._id}`)}
                 className="mt-2 btn btn-outline btn-primary hover:text-white btn-sm"
               >
                 View Profile

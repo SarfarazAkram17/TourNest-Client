@@ -17,10 +17,11 @@ import AdminRoute from "../Routes/AdminRoute";
 import TouristRoute from "../Routes/TouristRoute";
 import TourGuideRoute from "../Routes/TourGuideRoute";
 import Forbidden from "../Pages/Forbidden/Forbidden";
-import PakageDetails from "../Pages/PakageDetails/PakageDetails";
+import PackageDetails from "../Pages/PackageDetails/PackageDetails";
 import MyBookings from "../Pages/Dashboard/MyBookings/MyBookings";
 import Payment from "../Pages/Dashboard/Payment/Payment";
 import MyAssignedTours from "../Pages/Dashboard/MyAssignedTours/MyAssignedTours";
+import TourGuideProfile from "../Pages/TourGuideProfile/TourGuideProfile";
 
 const router = createBrowserRouter([
   {
@@ -45,7 +46,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/packages/:id",
-        Component: PakageDetails,
+        Component: PackageDetails,
+      },
+      {
+        path: "/tourGuide/:id",
+        Component: TourGuideProfile,
       },
       {
         path: "/login",
