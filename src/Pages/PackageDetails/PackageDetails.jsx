@@ -264,11 +264,11 @@ const PackageDetails = () => {
         <h2 className="text-2xl font-semibold text-primary mb-5">
           Meet Our Tour Guides
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {guides.slice(0, 6).map((guide) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {guides.map((guide) => (
             <div
               key={guide._id}
-              className="bg-white border shadow-sm rounded-lg p-3 space-y-3 text-center"
+              className="bg-white border shadow-sm rounded-lg py-3 px-6 space-y-2 text-center"
             >
               <img
                 src={guide.guideInfo.photo}
@@ -279,9 +279,15 @@ const PackageDetails = () => {
                 {guide.guideInfo.name}
               </h3>
               <p className="text-sm text-gray-600">{guide.guideInfo.email}</p>
+              <p className="text-sm text-gray-600">
+                <strong>Experience:</strong> {guide.guideInfo.experience}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Phone:</strong> {guide.guideInfo.phone}
+              </p>
               <button
                 onClick={() => navigate(`/tourGuide/${guide._id}`)}
-                className="mt-2 btn btn-outline btn-primary hover:text-white btn-sm"
+                className="mt-2 w-full btn btn-outline btn-primary hover:text-white btn-sm"
               >
                 View Profile
               </button>

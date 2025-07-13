@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 
 const Overview = () => {
   return (
@@ -6,17 +7,25 @@ const Overview = () => {
       <div className="grid md:grid-cols-2 gap-10 items-center">
         {/* Text Content */}
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-primary">
             Experience Bangladesh Like Never Before
           </h2>
-          <p className="text-gray-700 mb-6">
-            TourNest is your gateway to discovering the real Bangladesh — from its timeless heritage to its vibrant local life. Partnering with trusted local guides, we bring you personalized adventures that go beyond tourist spots.
+          <p className="text-gray-700 text-sm mb-6">
+            TourNest is your gateway to discovering the real Bangladesh — from
+            its timeless heritage to its vibrant local life. Partnering with
+            trusted local guides, we bring you personalized adventures that go
+            beyond tourist spots.
           </p>
           <ul className="space-y-2 text-sm text-gray-600 list-disc list-inside">
             <li>Explore culturally rich destinations with local insights</li>
             <li>Connect with verified tour guides across all regions</li>
             <li>Enjoy seamless planning, booking, and communication</li>
           </ul>
+          <Link to="/allTrips">
+            <button className="mt-6 btn btn-primary text-white">
+              Explore Tour Packages
+            </button>
+          </Link>
         </div>
 
         {/* Video Content */}

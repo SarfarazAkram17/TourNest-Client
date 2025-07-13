@@ -1,0 +1,14 @@
+.react-tabs__tab-list {
+  border-bottom: 1.5px solid #f5693e;
+}
+
+.react-tabs {
+  font-size: 18px;
+}
+
+.react-tabs__tab--selected {
+  border: 1.5px solid #f5693e;
+  border-bottom: none;
+  color: #f5693e;
+  font-weight: 600;
+}

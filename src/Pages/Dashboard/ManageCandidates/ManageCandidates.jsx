@@ -12,6 +12,7 @@ import {
   MdCheckCircle,
   MdCancel,
 } from "react-icons/md";
+import { FiX } from "react-icons/fi";
 
 const ManageCandidates = () => {
   const axiosSecure = useAxiosSecure();
@@ -281,13 +282,13 @@ const ManageCandidates = () => {
               Candidate Details
             </h3>
             <button
-              className="absolute right-3 top-3 text-gray-500 hover:text-red-600 text-lg"
+              className="absolute right-3 top-3 text-gray-500 hover:text-red-500 text-lg"
               onClick={() => {
                 setShowModal(false);
                 setSelectedCandidate(null);
               }}
             >
-              ✕
+              <FiX size={26} />
             </button>
             <div className="space-y-2 text-sm md:text-base pb-4">
               <p>
