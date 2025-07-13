@@ -2,7 +2,7 @@ import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import OurPackagesTab from "../OurPackagesTab/OurPackagesTab";
 import MeetOurTourGuidesTab from "../MeetOurTourGuidesTab/MeetOurTourGuidesTab";
-import "./TourismTab.css"; // custom styles here
+import "./TourismTab.css";
 
 const TourismTravelGuideSection = () => {
   return (
