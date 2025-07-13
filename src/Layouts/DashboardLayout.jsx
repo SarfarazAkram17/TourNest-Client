@@ -71,29 +71,11 @@ const DashboardLayout = () => {
             </NavLink>
           </li>
 
-          <li className="my-1">
-            <NavLink to="/dashboard/myBookings">
-              <MdBookmarkAdded size={18} /> My Bookings
-            </NavLink>
-          </li>
-
-          <li className="my-1">
-            <NavLink to="/dashboard/addStories">
-              <FiPackage /> Add Stories
-            </NavLink>
-          </li>
-
-          <li className="my-1">
-            <NavLink to="/dashboard/manageStories">
-              <FiBookOpen /> Manage Stories
-            </NavLink>
-          </li>
-
           {!roleLoading && role === "tourist" && (
             <>
               <li className="my-1">
-                <NavLink to="/dashboard/joinAsTourGuide">
-                  <FaUserTie /> Join as tour guide
+                <NavLink to="/dashboard/myBookings">
+                  <MdBookmarkAdded size={18} /> My Bookings
                 </NavLink>
               </li>
             </>
@@ -126,6 +108,28 @@ const DashboardLayout = () => {
               <li className="my-1">
                 <NavLink to="/dashboard/manageCandidates">
                   <FiClipboard /> Manage Candidates
+                </NavLink>
+              </li>
+            </>
+          )}
+
+          <li className="my-1">
+            <NavLink to="/dashboard/addStories">
+              <FiPackage /> Add Stories
+            </NavLink>
+          </li>
+
+          <li className="my-1">
+            <NavLink to="/dashboard/manageStories">
+              <FiBookOpen /> Manage Stories
+            </NavLink>
+          </li>
+
+          {!roleLoading && role === "tourist" && (
+            <>
+              <li className="my-1">
+                <NavLink to="/dashboard/joinAsTourGuide">
+                  <FaUserTie /> Join as tour guide
                 </NavLink>
               </li>
             </>

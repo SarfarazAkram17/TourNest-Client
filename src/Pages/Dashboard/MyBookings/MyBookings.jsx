@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import useAuth from "../../../Hooks/useAuth";
 import Swal from "sweetalert2";
 import Loading from "../../../Components/Loading/Loading";
 import { Link } from "react-router";
+import Confetti from "react-confetti";
+import { useWindowSize } from "react-use";
 import {
   MdKeyboardDoubleArrowRight,
   MdOutlineKeyboardDoubleArrowLeft,
@@ -13,9 +15,12 @@ import {
 const MyBookings = () => {
   const { userEmail } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const { width, height } = useWindowSize();
 
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["myBookings", page, searchTerm],
@@ -34,6 +39,22 @@ const MyBookings = () => {
 
   const bookings = data?.bookings || [];
   const totalPages = Math.ceil((data?.total || 0) / 10);
+
+  useEffect(() => {
+    const paidCount = bookings.filter(
+      (b) => b.payment_status === "paid"
+    ).length;
+
+    if (paidCount >= 3) {
+      setShowConfetti(true);
+      setShowCongrats(true);
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+        setShowCongrats(false);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [bookings]);
 
   const handlePageChange = (newPage) => setPage(newPage);
 
@@ -67,6 +88,25 @@ const MyBookings = () => {
 
   return (
     <div className="p-4">
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={600}
+        />
+      )}
+      {showCongrats && (
+        <div className="fixed top-1/4 left-1/2 space-y-5 -translate-x-1/2 bg-white border border-primary shadow-lg rounded-xl px-6 py-4 z-50 text-center animate-bounce">
+          <h2 className="text-3xl font-bold text-green-600">
+            🎉 Congratulations! 🎉
+          </h2>
+          <p className="text-gray-700 lg">
+            You’ve completed 3 or more paid bookings!
+          </p>
+        </div>
+      )}
+
       <h2 className="text-3xl font-bold text-center text-primary mb-6">
         My Bookings
       </h2>
