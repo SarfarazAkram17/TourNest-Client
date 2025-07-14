@@ -22,6 +22,8 @@ import MyBookings from "../Pages/Dashboard/MyBookings/MyBookings";
 import Payment from "../Pages/Dashboard/Payment/Payment";
 import MyAssignedTours from "../Pages/Dashboard/MyAssignedTours/MyAssignedTours";
 import TourGuideProfile from "../Pages/TourGuideProfile/TourGuideProfile";
+import AddStories from "../Pages/Dashboard/AddStories/AddStories";
+import ManageStories from "../Pages/Dashboard/ManageStories/ManageStories";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
       {
         index: true,
         Component: ManageProfile,
+      },
+      {
+        path: "addStories",
+        Component: AddStories,
+      },
+      {
+        path: "manageStories",
+        Component: ManageStories,
       },
       {
         path: "myBookings",

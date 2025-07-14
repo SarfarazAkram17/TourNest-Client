@@ -66,7 +66,7 @@ const PackageDetails = () => {
     setValue("tourDate", selectedDate);
   }, [selectedDate, setValue]);
 
-  const onSubmit = async (data) => {
+  const handleBooking = async (data) => {
     if (!user) {
       Swal.fire(
         "Login Required",
@@ -302,7 +302,7 @@ const PackageDetails = () => {
         <h2 className="text-3xl text-center font-semibold text-primary mb-8">
           Book This Package
         </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleBooking)} className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-6 items-start">
             <div className="fieldset">
               <label className="block text-sm">Package Name</label>

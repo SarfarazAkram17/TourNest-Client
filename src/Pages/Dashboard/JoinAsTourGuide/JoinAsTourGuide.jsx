@@ -47,7 +47,7 @@ const JoinAsTourGuide = () => {
     );
   };
 
-  const onSubmit = async (data) => {
+  const handleJoinAsTourGuide = async (data) => {
     if (!selectedRegion) {
       toast.error("Please select a Region.");
       return;
@@ -112,7 +112,7 @@ const JoinAsTourGuide = () => {
       </h2>
 
       <div className="p-6 shadow-lg bg-white rounded-lg mt-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit(handleJoinAsTourGuide)} className="space-y-4" noValidate>
           {/* Application Title */}
           <div>
             <label htmlFor="applicationTitle" className="text-xs text-black/60 font-semibold mb-1 block">Application Title</label>
