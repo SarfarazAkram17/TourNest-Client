@@ -18,7 +18,7 @@ const PaymentForm = () => {
   const navigate = useNavigate();
 
 
-  const { data: booking, isPending } = useQuery({
+  const { data: booking, isLoading } = useQuery({
     queryKey: ["bookings", bookingId],
     queryFn: async () => {
       const res = await axiosSecure.get(
@@ -28,7 +28,7 @@ const PaymentForm = () => {
     },
   });
 
-  if (isPending) return <Loading />;
+  if (isLoading) return <Loading />;
 
   const price = booking.price;
 

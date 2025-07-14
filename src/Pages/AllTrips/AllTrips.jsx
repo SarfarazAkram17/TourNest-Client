@@ -1,18 +1,34 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router";
 import useAxios from "../../Hooks/useAxios";
 import Loading from "../../Components/Loading/Loading";
+import PackageCard from "../../Components/Shared/PackageCard";
+import {
+  MdKeyboardDoubleArrowRight,
+  MdOutlineKeyboardDoubleArrowLeft,
+} from "react-icons/md";
 
 const AllTrips = () => {
   const axiosInstance = useAxios();
 
-  const { data: packages = [], isLoading } = useQuery({
-    queryKey: ["all-packages"],
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["all-packages", page],
     queryFn: async () => {
-      const res = await axiosInstance.get("/packages");
+      const res = await axiosInstance.get("/packages", {
+        params: { page },
+      });
       return res.data;
     },
+    keepPreviousData: true,
   });
+
+  const packages = data?.packages || data || [];
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / data?.limit);
+
+  const handlePageChange = (newPage) => setPage(newPage);
 
   if (isLoading) return <Loading />;
 
@@ -31,39 +47,52 @@ const AllTrips = () => {
       {packages.length === 0 ? (
         <p className="text-center text-gray-500">No packages available.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <div
-              key={pkg._id}
-              className="bg-white border border-gray-100 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {packages.map((pkg) => (
+              <PackageCard key={pkg._id} pkg={pkg}></PackageCard>
+            ))}
+          </div>
+
+         {/* Pagination */}
+          <div className="flex justify-center mt-6 gap-2 flex-wrap">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className={`btn btn-sm ${
+                page === 1
+                  ? "btn-disabled text-black/40"
+                  : "btn-primary text-white"
+              }`}
             >
-              <div className="h-52 overflow-hidden rounded-t-xl">
-                <img
-                  src={pkg.images?.[0]}
-                  alt={pkg.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4 space-y-4">
-                <h3 className="text-xl font-semibold">{pkg.title}</h3>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Location:</span> {pkg.location}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Type:</span> {pkg.tourType}
-                </p>
-                <p className="text-sm text-gray-700 font-semibold">
-                  ৳{pkg.price.toLocaleString("en-BD")}
-                </p>
-                <Link to={`/packages/${pkg._id}`}>
-                  <button className="btn btn-sm btn-primary text-white w-full">
-                    View Details
-                  </button>
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+              <MdOutlineKeyboardDoubleArrowLeft size={20} />
+            </button>
+
+            {[...Array(totalPages).keys()].map((n) => (
+              <button
+                key={n}
+                onClick={() => handlePageChange(n + 1)}
+                className={`btn btn-sm ${
+                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
+                }`}
+              >
+                {n + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages || totalPages === 0}
+              className={`btn btn-sm ${
+                page === totalPages || totalPages === 0
+                  ? "btn-disabled text-black/40"
+                  : "btn-primary text-white"
+              }`}
+            >
+              <MdKeyboardDoubleArrowRight size={20} />
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

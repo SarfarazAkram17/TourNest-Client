@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import useAuth from "../../../Hooks/useAuth";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
@@ -6,6 +6,7 @@ import useUserRole from "../../../Hooks/useUserRole";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 const AddStories = () => {
   const { user, userEmail } = useAuth();
@@ -40,7 +41,7 @@ const AddStories = () => {
         formData.append("file", files[i]);
         formData.append("upload_preset", uploadPreset);
 
-        const res = await axiosSecure.post(
+        const res = await axios.post(
           `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           formData
         );
