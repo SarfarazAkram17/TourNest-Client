@@ -63,7 +63,8 @@ const travelTips = [
 
 const TravelTips = () => {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-16">
+      <div className="bg-gray-50 py-16 px-4">
+    <div className="max-w-5xl mx-auto">
       <h2 className="text-center text-3xl md:text-4xl font-bold text-primary mb-6">
         Travel Tips & Safety Advice
       </h2>
@@ -91,6 +92,7 @@ const TravelTips = () => {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 };

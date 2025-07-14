@@ -3,7 +3,8 @@ import { Link } from "react-router";
 
 const Overview = () => {
   return (
-    <div className="max-w-5xl mx-auto py-12 px-4">
+  <div className="bg-gray-50 py-16 px-4">
+      <div className="max-w-5xl mx-auto">
       <div className="grid md:grid-cols-2 gap-10 items-center">
         {/* Text Content */}
         <div>
@@ -43,6 +44,7 @@ const Overview = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

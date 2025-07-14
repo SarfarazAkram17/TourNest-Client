@@ -23,7 +23,7 @@ const OurPackagesTab = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
       {packages.map((pkg) => (
-        <PackageCard key={pkg.id} pkg={pkg}></PackageCard>
+        <PackageCard key={pkg._id} pkg={pkg}></PackageCard>
       ))}
     </div>
   );

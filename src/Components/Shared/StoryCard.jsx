@@ -6,7 +6,7 @@ const StoryCard = ({ story }) => {
 
   return (
     <>
-      <div className="border h-full rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-500">
+      <div className="border border-black/50 h-full rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-500">
         {/* Cover Image */}
         <img
           src={story.images[0]}
@@ -16,6 +16,11 @@ const StoryCard = ({ story }) => {
 
         <div className="p-4 space-y-2">
           <h3 className="text-xl font-semibold text-primary">{story.title}</h3>
+
+          <p className="text-sm text-gray-500">
+            <strong>Uploaded On:</strong>{" "}
+            {new Date(story.uploadedAt).toLocaleString("en-BD")}
+          </p>
 
           <p className="text-sm text-gray-500">
             <strong>Location:</strong> {story.location}
@@ -81,6 +86,10 @@ const StoryCard = ({ story }) => {
               </h2>
               <p className="text-center text-gray-600 mb-4">
                 <strong>Location:</strong> {story.location}
+              </p>
+              <p className="text-center text-gray-600 mb-4">
+                <strong>Uploaded On:</strong>{" "}
+                {new Date(story.uploadedAt).toLocaleString("en-BD")}
               </p>
 
               {/* Zigzag Image Gallery */}
