@@ -22,3 +22,9 @@ h6 {
 body {
   font-family: "Poppins", sans-serif;
 }
+
+@media screen and (min-width: 320px) {
+  body{
+    overflow-x: hidden;
+  }
+}

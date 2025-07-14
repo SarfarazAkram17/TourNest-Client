@@ -39,23 +39,7 @@ const Navbar = () => {
         className="px-4 py-1 font-semibold rounded-full text-sm"
         to="/allTrips"
       >
-       All Trips
-      </NavLink>
-    </>
-  );
-  const profileLinks = (
-    <>
-      <NavLink
-        className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/dashboard"
-      >
-        Dashboard
-      </NavLink>
-      <NavLink
-        className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/offerAnnouncements"
-      >
-        Offer Announcements
+        All Trips
       </NavLink>
     </>
   );
@@ -111,11 +95,16 @@ const Navbar = () => {
               </div>
               <ul
                 tabIndex={0}
-                className="menu menu-sm dropdown-content bg-base-100 w-52 rounded-box z-10 mt-1 space-y-2 text-center shadow"
+                className="menu menu-sm dropdown-content bg-base-100 w-56 rounded-box z-10 mt-1 space-y-2 text-center shadow"
               >
                 <li className="text-xs">Hi, {user.displayName}</li>
                 <li className="text-xs">{userEmail}</li>
-                {profileLinks}
+                <NavLink
+                  className="px-4 py-1 font-semibold rounded-full text-sm"
+                  to="/dashboard"
+                >
+                  Dashboard
+                </NavLink>
               </ul>
             </div>
             <button
