@@ -13,8 +13,10 @@ import Footer from "../Components/Common/Footer";
 import useUserRole from "../Hooks/useUserRole";
 import { MdBookmarkAdded } from "react-icons/md";
 import { FaUserTie } from "react-icons/fa";
+import useAuth from "../Hooks/useAuth";
 
 const DashboardLayout = () => {
+  const { user } = useAuth();
   const { role, roleLoading } = useUserRole();
 
   return (
@@ -44,7 +46,14 @@ const DashboardLayout = () => {
               </svg>
             </label>
           </div>
-          <div className="mx-2 font-bold px-2">Dashboard</div>
+          <div className="mx-2 font-bold px-2 flex gap-2 items-center">
+            <img
+              src={user.photoURL}
+              alt={user.displayName}
+              className="h-11 w-11"
+            />
+            <span>{user.displayName} Dashboard</span>
+          </div>
         </div>
 
         <div className="mt-12 mb-16">

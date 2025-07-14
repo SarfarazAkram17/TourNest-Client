@@ -1,13 +1,20 @@
 import { useParams } from "react-router";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "../../Hooks/useAxios";
 import Loading from "../../Components/Loading/Loading";
+import StoryCard from "../../Components/Shared/StoryCard";
+import {
+  MdKeyboardDoubleArrowRight,
+  MdOutlineKeyboardDoubleArrowLeft,
+} from "react-icons/md";
 
 const TourGuideProfile = () => {
   const { id } = useParams();
   const axiosInstance = useAxios();
+  const [page, setPage] = useState(1);
 
-  const { data: tourGuide, isLoading } = useQuery({
+  const { data: tourGuide, isLoading: isLoadingGuide } = useQuery({
     queryKey: ["tourGuide", id],
     queryFn: async () => {
       const res = await axiosInstance.get(`/users/tour-guide/${id}`);
@@ -15,20 +22,36 @@ const TourGuideProfile = () => {
     },
   });
 
-  if (isLoading) {
+  const {
+    data,
+    isLoading: isLoadingStories,
+  } = useQuery({
+    queryKey: ["tourGuide-stories", page],
+    queryFn: async () => {
+      const email = tourGuide?.guideInfo?.email;
+
+      const res = await axiosInstance.get(`/stories`, {
+        params: { email, page },
+      });
+      return res.data;
+    },
+    keepPreviousData: true,
+    enabled: !!tourGuide?.guideInfo?.email
+  });
+
+
+  const stories = data?.stories || [];
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / data?.limit);
+
+  const handlePageChange = (newPage) => setPage(newPage);
+
+  if (isLoadingGuide || isLoadingStories) {
     return <Loading />;
   }
 
-  if (!tourGuide) {
-    return (
-      <div className="text-center text-red-500">
-        <p>No tour guide found.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 my-10">
       {/* Profile Section */}
       <div className="flex flex-col items-center text-center space-y-4">
         <img
@@ -73,21 +96,71 @@ const TourGuideProfile = () => {
               {tourGuide.guideInfo.district}
             </p>
             <p className="text-gray-700 capitalize">
-              <span className="font-semibold">Languages Spoken:</span>{" "}
+              <span className="font-semibold">Languages:</span>{" "}
               {tourGuide.guideInfo.languages.join(", ")}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Stories Placeholder (To be implemented later) */}
-      <div className="bg-gray-50 p-6 rounded-lg shadow-lg mt-12">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Stories by {tourGuide.guideInfo.name}
+      {/* Tour Guide Stories Section */}
+      <div className="mt-16">
+        <h2 className="text-3xl md:text-4xl text-primary text-center font-semibold mb-10">
+          Stories Shared by {tourGuide.guideInfo.name}
         </h2>
-        <p className="text-lg text-gray-600">
-          Stories will be displayed here once implemented.
-        </p>
+
+        {stories.length === 0 ? (
+          <p className="text-center text-lg text-gray-700">
+            No Stories Shared yet.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {stories.map((story) => (
+                <StoryCard key={story._id} story={story} />
+              ))}
+            </div>
+
+             {/* Pagination */}
+          <div className="flex justify-center mt-10 gap-2 flex-wrap">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className={`btn btn-sm ${
+                page === 1
+                  ? "btn-disabled text-black/40"
+                  : "btn-primary text-white"
+              }`}
+            >
+              <MdOutlineKeyboardDoubleArrowLeft size={20} />
+            </button>
+
+            {[...Array(totalPages).keys()].map((n) => (
+              <button
+                key={n}
+                onClick={() => handlePageChange(n + 1)}
+                className={`btn btn-sm ${
+                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
+                }`}
+              >
+                {n + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages || totalPages === 0}
+              className={`btn btn-sm ${
+                page === totalPages || totalPages === 0
+                  ? "btn-disabled text-black/40"
+                  : "btn-primary text-white"
+              }`}
+            >
+              <MdKeyboardDoubleArrowRight size={20} />
+            </button>
+          </div>
+          </>
+        )}
       </div>
     </div>
   );

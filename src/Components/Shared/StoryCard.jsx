@@ -30,7 +30,7 @@ const StoryCard = ({ story }) => {
             {story.description}
           </p>
 
-          <div className="flex items-center gap-3 mt-3">
+          <div className="flex items-center gap-3 mt-3 mb-4">
             <img
               src={story.photo}
               alt={story.name}

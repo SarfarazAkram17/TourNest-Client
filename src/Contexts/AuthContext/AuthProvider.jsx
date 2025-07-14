@@ -8,6 +8,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../../../firebase.config";
 import useAxios from "../../Hooks/useAxios";
@@ -43,6 +44,10 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
     return signInWithPopup(auth, googleProvider);
   };
+
+  const forgotPassword = (email)=>{
+   return sendPasswordResetEmail(auth, email)
+  }
 
   const logOutUser = () => {
     setLoading(true);
@@ -90,6 +95,7 @@ const AuthProvider = ({ children }) => {
     loginUser,
     updateUserProfile,
     continueWithGoogle,
+    forgotPassword,
     logOutUser,
   };
 

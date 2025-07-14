@@ -10,7 +10,7 @@ import SocialLogin from "../../Components/Common/SocialLogin";
 const Login = () => {
   const axiosInstance = useAxios();
   const [showPassword, setShowPassword] = useState(false);
-  const { loginUser } = useAuth();
+  const { loginUser, forgotPassword } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,8 +19,11 @@ const Login = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm();
+
+  const email = watch("email").trim();
 
   const handleLogin = (formData) => {
     setLoading(true);
@@ -32,7 +35,7 @@ const Login = () => {
       .then(() => {
         toast.success("You logged in successfully");
         reset();
-        
+
         axiosInstance.post("/users", { email });
 
         navigate(location.state || "/");
@@ -42,6 +45,16 @@ const Login = () => {
       })
       .finally(() => {
         setLoading(false);
+      });
+  };
+
+  const handleForgotPassword = () => {
+    forgotPassword(email)
+      .then(() => {
+        toast.success("Password reset email send.");
+      })
+      .catch((err) => {
+        toast.error(`Error in password change: ${err.message}`);
       });
   };
 
@@ -91,7 +104,10 @@ const Login = () => {
               )}
             </div>
             <div>
-              <a className="link link-hover text-gray-600 font-semibold">
+              <a
+                onClick={handleForgotPassword}
+                className="link link-hover text-gray-600 font-semibold"
+              >
                 Forgot password?
               </a>
             </div>
