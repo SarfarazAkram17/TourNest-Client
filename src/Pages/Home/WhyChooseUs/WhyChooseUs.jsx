@@ -1,4 +1,5 @@
 import { FaHandshake, FaStar, FaShieldAlt, FaClock } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const reasons = [
   {
@@ -30,20 +31,41 @@ const reasons = [
 const WhyChooseUs = () => {
   return (
     <section className="max-w-5xl mx-auto px-4 py-12">
-      <h2 className="text-center text-3xl md:text-4xl font-bold text-primary mb-6">
+    
+      <motion.h2
+        className="text-center text-3xl md:text-4xl font-bold text-primary mb-6"
+        initial={{ opacity: 0, y: -40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.7 }}
+      >
         Why Choose Us
-      </h2>
-      <p className="text-center text-gray-600 max-w-3xl mx-auto mb-10 text-sm">
+      </motion.h2>
+
+    
+      <motion.p
+        className="text-center text-gray-600 max-w-3xl mx-auto mb-10 text-sm"
+        initial={{ opacity: 0, y: -20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
+      >
         Choosing the right travel partner can make all the difference in your
         journey. We are committed to providing unmatched services, trusted
         guides, and continuous support to ensure your travel experience is safe,
         enjoyable, and unforgettable.
-      </p>
+      </motion.p>
+
+  
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {reasons.map((reason, index) => (
-          <div
+          <motion.div
             key={index}
-            className="bg-white rounded-xl border-2 border-gray-200 p-4 text-center hover:border-secondary hover:shadow-lg transition duration-300"
+            className="bg-white rounded-xl border-2 border-gray-200 p-4 text-center hover:border-secondary hover:shadow-lg transition-border transition-shadow duration-300"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2}}
+            transition={{ duration: 0.6, delay: index * 0.2 }}
           >
             <div className="mb-4 flex justify-center">{reason.icon}</div>
             <h3 className="text-lg xl:text-xl font-semibold text-[#03373D] mb-2">
@@ -52,7 +74,7 @@ const WhyChooseUs = () => {
             <p className="text-xs xl:text-sm leading-relaxed text-[#606060]">
               {reason.description}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

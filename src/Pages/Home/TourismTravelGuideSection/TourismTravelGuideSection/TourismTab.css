@@ -1,5 +1,6 @@
-.react-tabs__tab-list {
+.custom-list {
   border-bottom: 1.5px solid #f5693e;
+  display: flex;
 }
 
 .react-tabs {

@@ -23,7 +23,7 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const email = watch("email").trim();
+  const email = watch("email")?.trim() || "";
 
   const handleLogin = (formData) => {
     setLoading(true);
@@ -49,9 +49,14 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
+    if (!email) {
+      return toast.warn("Please enter your email first.");
+    }
+
     forgotPassword(email)
       .then(() => {
         toast.success("Password reset email send.");
+        toast.warn('Also check email in the spam section')
       })
       .catch((err) => {
         toast.error(`Error in password change: ${err.message}`);

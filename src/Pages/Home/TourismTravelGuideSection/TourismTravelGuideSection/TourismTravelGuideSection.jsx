@@ -12,7 +12,7 @@ const TourismTravelGuideSection = () => {
       </h2>
 
       <Tabs>
-        <TabList>
+        <TabList className='custom-list'>
           <Tab>Our Package</Tab>
           <Tab>Meet Our Tour Guides</Tab>
         </TabList>

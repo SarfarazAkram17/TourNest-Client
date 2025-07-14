@@ -45,9 +45,9 @@ const AuthProvider = ({ children }) => {
     return signInWithPopup(auth, googleProvider);
   };
 
-  const forgotPassword = (email)=>{
-   return sendPasswordResetEmail(auth, email)
-  }
+  const forgotPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
 
   const logOutUser = () => {
     setLoading(true);

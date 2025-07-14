@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   FaUmbrellaBeach,
   FaMapMarkedAlt,
@@ -63,36 +64,52 @@ const travelTips = [
 
 const TravelTips = () => {
   return (
-      <div className="bg-gray-50 py-16 px-4">
-    <div className="max-w-5xl mx-auto">
-      <h2 className="text-center text-3xl md:text-4xl font-bold text-primary mb-6">
-        Travel Tips & Safety Advice
-      </h2>
-      <p className="text-center text-sm max-w-3xl mx-auto text-gray-600 mb-10">
-        Planning a trip? Stay prepared with essential tips to ensure a safe,
-        enjoyable, and hassle-free journey through Bangladesh's stunning
-        landscapes and vibrant cultures. From packing smartly to respecting
-        local customs, these expert tips will help you make the most of your
-        adventure.
-      </p>
+    <div className="bg-gray-50 py-16 px-4">
+      <div className="max-w-5xl mx-auto">
+        <motion.h2
+          className="text-center text-3xl md:text-4xl font-bold text-primary mb-6"
+          initial={{ opacity: 0, y: -40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.7 }}
+        >
+          Travel Tips & Safety Advice
+        </motion.h2>
+        <motion.p
+          className="text-center text-sm max-w-3xl mx-auto text-gray-600 mb-10"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+        >
+          Planning a trip? Stay prepared with essential tips to ensure a safe,
+          enjoyable, and hassle-free journey through Bangladesh's stunning
+          landscapes and vibrant cultures. From packing smartly to respecting
+          local customs, these expert tips will help you make the most of your
+          adventure.
+        </motion.p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {travelTips.map((tip, index) => (
-          <div
-            key={index}
-            className="rounded-xl border-2 border-gray-200 hover:border-secondary hover:shadow-lg transition duration-500 p-4 bg-white"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              {tip.icon}
-              <h3 className="font-semibold text-[#03373D]">{tip.title}</h3>
-            </div>
-            <p className="text-xs xl:text-sm leading-relaxed text-[#606060]">
-              {tip.description}
-            </p>
-          </div>
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {travelTips.map((tip, index) => (
+            <motion.div
+              key={index}
+              className="rounded-xl border-2 border-gray-200 hover:border-secondary hover:shadow-lg transition-border transition-shadow duration-300 p-4 bg-white"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false }}
+              transition={{ duration: 0.3, delay: index * 0.2 }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                {tip.icon}
+                <h3 className="font-semibold text-[#03373D]">{tip.title}</h3>
+              </div>
+              <p className="text-xs xl:text-sm leading-relaxed text-[#606060]">
+                {tip.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
     </div>
   );
 };
