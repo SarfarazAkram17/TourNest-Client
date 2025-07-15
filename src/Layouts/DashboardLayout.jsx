@@ -12,7 +12,7 @@ import {
 import Footer from "../Components/Common/Footer";
 import useUserRole from "../Hooks/useUserRole";
 import { MdBookmarkAdded } from "react-icons/md";
-import { FaUserTie } from "react-icons/fa";
+import { FaIdBadge, FaUserTie } from "react-icons/fa";
 import useAuth from "../Hooks/useAuth";
 
 const DashboardLayout = () => {
@@ -79,6 +79,16 @@ const DashboardLayout = () => {
               <FiUser /> Manage Profile
             </NavLink>
           </li>
+
+          {!roleLoading && role === "tour guide" && (
+            <>
+              <li className="my-1">
+                <NavLink to="/dashboard/manageGuideProfile">
+                  <FaIdBadge /> Manage Guide Profile
+                </NavLink>
+              </li>
+            </>
+          )}
 
           <li className="my-1">
             <NavLink to="/dashboard/myBookings">

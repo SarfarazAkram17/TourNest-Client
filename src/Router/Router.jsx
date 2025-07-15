@@ -25,6 +25,7 @@ import TourGuideProfile from "../Pages/TourGuideProfile/TourGuideProfile";
 import AddStories from "../Pages/Dashboard/AddStories/AddStories";
 import ManageStories from "../Pages/Dashboard/ManageStories/ManageStories";
 import EditStories from "../Pages/Dashboard/EditStories/EditStories";
+import ManageGuideProfile from "../Pages/Dashboard/ManageGuideProfile/ManageGuideProfile";
 
 const router = createBrowserRouter([
   {
@@ -129,7 +130,14 @@ const router = createBrowserRouter([
           </TouristRoute>
         ),
       },
-
+      {
+        path: "manageGuideProfile",
+        element: (
+          <TourGuideRoute>
+            <ManageGuideProfile></ManageGuideProfile>
+          </TourGuideRoute>
+        ),
+      },
       {
         path: "myAssignedTours",
         element: (

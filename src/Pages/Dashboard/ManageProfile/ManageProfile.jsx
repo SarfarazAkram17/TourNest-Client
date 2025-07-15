@@ -3,7 +3,6 @@ import { FiEdit3, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
 import axios from "axios";
 import useAuth from "../../../Hooks/useAuth";
-import userImage from "../../../assets/image-upload-icon.png";
 import useUserRole from "../../../Hooks/useUserRole";
 import { Link } from "react-router";
 
@@ -177,7 +176,7 @@ const ManageProfile = () => {
                     className="cursor-pointer block w-32 h-32 rounded-full border-2 border-primary overflow-hidden mb-2"
                   >
                     <img
-                      src={preview || userImage}
+                      src={preview}
                       alt="Profile Preview"
                       className="w-full h-full object-cover"
                     />
@@ -241,7 +240,7 @@ const ManageProfile = () => {
                     {loading ? (
                       <span className="loading loading-spinner text-primary"></span>
                     ) : (
-                      "Save"
+                      "Update"
                     )}
                   </button>
                 </div>
