@@ -26,6 +26,7 @@ import AddStories from "../Pages/Dashboard/AddStories/AddStories";
 import ManageStories from "../Pages/Dashboard/ManageStories/ManageStories";
 import EditStories from "../Pages/Dashboard/EditStories/EditStories";
 import ManageGuideProfile from "../Pages/Dashboard/ManageGuideProfile/ManageGuideProfile";
+import StoryDetails from "../Pages/StoryDetails/StoryDetails";
 
 const router = createBrowserRouter([
   {
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
       {
         path: "/tourGuide/:id",
         Component: TourGuideProfile,
+      },
+      {
+        path: "/stories/:id",
+        Component: StoryDetails,
       },
       {
         path: "/login",

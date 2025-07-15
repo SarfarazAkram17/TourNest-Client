@@ -33,7 +33,7 @@ const MyAssignedTours = () => {
     },
     keepPreviousData: true,
     enabled: !!userEmail,
-    refetchInterval: 5000,
+    refetchInterval: 3000,
   });
 
   const assignedTours = data?.bookings || [];

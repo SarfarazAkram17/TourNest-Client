@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useParams, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../../../Hooks/useAuth";
+import useAxios from "../../../Hooks/useAxios";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -12,6 +13,7 @@ import Loading from "../../../Components/Loading/Loading";
 const EditStories = () => {
   const { storyId } = useParams();
   const { userEmail } = useAuth();
+  const axiosInstance = useAxios();
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const fileInputRef = useRef();
@@ -34,9 +36,7 @@ const EditStories = () => {
   const { data: storyData, isLoading } = useQuery({
     queryKey: ["story", storyId, userEmail],
     queryFn: async () => {
-      const res = await axiosSecure.get(
-        `/stories/${storyId}?email=${userEmail}`
-      );
+      const res = await axiosInstance.get(`/stories/${storyId}`);
       return res.data;
     },
     enabled: !!storyId && !!userEmail,
