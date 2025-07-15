@@ -5,8 +5,18 @@ import axios from "axios";
 import useAuth from "../../../Hooks/useAuth";
 import useUserRole from "../../../Hooks/useUserRole";
 import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import Loading from "../../../Components/Loading/Loading";
+import {
+  FaUsers,
+  FaMoneyBillWave,
+  FaMapMarkedAlt,
+  FaBookOpen,
+} from "react-icons/fa";
 
 const ManageProfile = () => {
+  const axiosSecure = useAxiosSecure();
   const { user, userEmail, updateUserProfile } = useAuth();
   const { role, roleLoading } = useUserRole();
 
@@ -18,6 +28,16 @@ const ManageProfile = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const { data: stats = {}, isLoading } = useQuery({
+    queryKey: ["adminStats"],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/admin/stats?email=${userEmail}`);
+      return res.data;
+    },
+    enabled: !roleLoading && role === "admin",
+  });
+  console.log(stats);
 
   useEffect(() => {
     if (user?.photoURL && !preview) {
@@ -112,6 +132,72 @@ const ManageProfile = () => {
       <h2 className="text-3xl font-bold mb-8 text-primary">
         Welcome back, {user?.displayName} 👋
       </h2>
+
+      {!roleLoading && role === "admin" && (
+        <div className="my-10">
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">
+            Admin Dashboard Stats
+          </h3>
+
+          {isLoading ? (
+            <Loading></Loading>
+          ) : (
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {/* Total Payments */}
+              <div className="bg-green-100 text-green-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+                <FaMoneyBillWave size={40} />
+                <div>
+                  <p className="text-lg font-bold">
+                    ৳ {stats.totalPayments || 0}
+                  </p>
+                  <p className="text-sm font-medium">Total Payments</p>
+                </div>
+              </div>
+
+              {/* Tour Guides */}
+              <div className="bg-blue-100 text-blue-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+                <FaUsers size={40} />
+                <div>
+                  <p className="text-lg font-bold">
+                    {stats.totalTourGuides || 0}
+                  </p>
+                  <p className="text-sm font-medium">Tour Guides</p>
+                </div>
+              </div>
+
+              {/* Clients */}
+              <div className="bg-purple-100 text-purple-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+                <FaUsers size={40} />
+                <div>
+                  <p className="text-lg font-bold">{stats.totalClients || 0}</p>
+                  <p className="text-sm font-medium">Tourists/Clients</p>
+                </div>
+              </div>
+
+              {/* Packages */}
+              <div className="bg-yellow-100 text-yellow-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+                <FaMapMarkedAlt size={40} />
+                <div>
+                  <p className="text-lg font-bold">
+                    {stats.totalPackages || 0}
+                  </p>
+                  <p className="text-sm font-medium">Tour Packages</p>
+                </div>
+              </div>
+
+              {/* Stories */}
+              <div className="bg-pink-100 text-pink-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+                <FaBookOpen size={40} />
+                <div>
+                  <p className="text-lg font-bold">{stats.totalStories || 0}</p>
+                  <p className="text-sm font-medium">Stories</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="shadow-lg p-6 bg-white rounded-lg">
         <div className="flex flex-col md:flex-row gap-8 items-center">
           <img
