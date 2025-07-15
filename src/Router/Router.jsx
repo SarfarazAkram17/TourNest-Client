@@ -24,6 +24,7 @@ import MyAssignedTours from "../Pages/Dashboard/MyAssignedTours/MyAssignedTours"
 import TourGuideProfile from "../Pages/TourGuideProfile/TourGuideProfile";
 import AddStories from "../Pages/Dashboard/AddStories/AddStories";
 import ManageStories from "../Pages/Dashboard/ManageStories/ManageStories";
+import EditStories from "../Pages/Dashboard/EditStories/EditStories";
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: "manageStories",
         Component: ManageStories,
+      },
+      {
+        path: "editStories/:storyId",
+        Component: EditStories,
       },
       {
         path: "myBookings",

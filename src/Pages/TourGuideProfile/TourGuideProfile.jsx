@@ -22,10 +22,7 @@ const TourGuideProfile = () => {
     },
   });
 
-  const {
-    data,
-    isLoading: isLoadingStories,
-  } = useQuery({
+  const { data, isLoading: isLoadingStories } = useQuery({
     queryKey: ["tourGuide-stories", page],
     queryFn: async () => {
       const email = tourGuide?.guideInfo?.email;
@@ -36,9 +33,8 @@ const TourGuideProfile = () => {
       return res.data;
     },
     keepPreviousData: true,
-    enabled: !!tourGuide?.guideInfo?.email
+    enabled: !!tourGuide?.guideInfo?.email,
   });
-
 
   const stories = data?.stories || [];
   const total = data?.total || 0;
@@ -121,44 +117,44 @@ const TourGuideProfile = () => {
               ))}
             </div>
 
-             {/* Pagination */}
-          <div className="flex justify-center mt-10 gap-2 flex-wrap">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className={`btn btn-sm ${
-                page === 1
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdOutlineKeyboardDoubleArrowLeft size={20} />
-            </button>
-
-            {[...Array(totalPages).keys()].map((n) => (
+            {/* Pagination */}
+            <div className="flex justify-center mt-10 gap-2 flex-wrap">
               <button
-                key={n}
-                onClick={() => handlePageChange(n + 1)}
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
                 className={`btn btn-sm ${
-                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
+                  page === 1
+                    ? "btn-disabled text-black/40"
+                    : "btn-primary text-white"
                 }`}
               >
-                {n + 1}
+                <MdOutlineKeyboardDoubleArrowLeft size={20} />
               </button>
-            ))}
 
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages || totalPages === 0}
-              className={`btn btn-sm ${
-                page === totalPages || totalPages === 0
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdKeyboardDoubleArrowRight size={20} />
-            </button>
-          </div>
+              {[...Array(totalPages).keys()].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => handlePageChange(n + 1)}
+                  className={`btn btn-sm ${
+                    page === n + 1 ? "btn-primary text-white" : "btn-outline"
+                  }`}
+                >
+                  {n + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages || totalPages === 0}
+                className={`btn btn-sm ${
+                  page === totalPages || totalPages === 0
+                    ? "btn-disabled text-black/40"
+                    : "btn-primary text-white"
+                }`}
+              >
+                <MdKeyboardDoubleArrowRight size={20} />
+              </button>
+            </div>
           </>
         )}
       </div>

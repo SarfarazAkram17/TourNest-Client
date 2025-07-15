@@ -201,7 +201,7 @@ const ManageStories = () => {
                     key={idx}
                     src={img}
                     alt={`story-img-${idx}`}
-                    className="w-full object-cover rounded-lg shadow"
+                    className="w-full object-cover rounded-lg"
                   />
                 ))}
               </div>
