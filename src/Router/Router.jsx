@@ -1,11 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import RootLayout from "../Layouts/RootLayout";
 import Community from "../Pages/Community/Community";
-import AboutUs from "../Pages/AboutUs/AboutUs";
 import AllTrips from "../Pages/AllTrips/AllTrips";
-import Register from "../Pages/Authentication/Register";
-import Login from "../Pages/Authentication/Login";
-import Home from "../Pages/Home/Home/Home";
 import DashboardLayout from "../Layouts/DashboardLayout";
 import PrivateRoute from "../Routes/PrivateRoutes";
 import ManageProfile from "../Pages/Dashboard/ManageProfile/ManageProfile";
@@ -16,7 +12,6 @@ import JoinAsTourGuide from "../Pages/Dashboard/JoinAsTourGuide/JoinAsTourGuide"
 import AdminRoute from "../Routes/AdminRoute";
 import TouristRoute from "../Routes/TouristRoute";
 import TourGuideRoute from "../Routes/TourGuideRoute";
-import Forbidden from "../Pages/Forbidden/Forbidden";
 import PackageDetails from "../Pages/PackageDetails/PackageDetails";
 import MyBookings from "../Pages/Dashboard/MyBookings/MyBookings";
 import Payment from "../Pages/Dashboard/Payment/Payment";
@@ -27,6 +22,15 @@ import ManageStories from "../Pages/Dashboard/ManageStories/ManageStories";
 import EditStories from "../Pages/Dashboard/EditStories/EditStories";
 import ManageGuideProfile from "../Pages/Dashboard/ManageGuideProfile/ManageGuideProfile";
 import StoryDetails from "../Pages/StoryDetails/StoryDetails";
+import { lazy, Suspense } from "react";
+import Loading from "../Components/Loading/Loading";
+
+const Home = lazy(() => import("../Pages/Home/Home/Home"));
+const AboutUs = lazy(() => import("../Pages/AboutUs/AboutUs"));
+const Login = lazy(() => import("../Pages/Authentication/Login"));
+const Register = lazy(() => import("../Pages/Authentication/Register"));
+const ErrorPage = lazy(() => import("../Pages/ErrorPage/ErrorPage"));
+const Forbidden = lazy(() => import("../Pages/Forbidden/Forbidden"));
 
 const router = createBrowserRouter([
   {
@@ -35,7 +39,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: Home,
+        element: (
+          <Suspense fallback={<Loading></Loading>}>
+            <Home></Home>
+          </Suspense>
+        ),
       },
       {
         path: "/community",
@@ -43,7 +51,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/aboutUs",
-        Component: AboutUs,
+        element: (
+          <Suspense fallback={<Loading></Loading>}>
+            <AboutUs></AboutUs>
+          </Suspense>
+        ),
       },
       {
         path: "/allTrips",
@@ -63,11 +75,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/login",
-        Component: Login,
+        element: (
+          <Suspense fallback={<Loading></Loading>}>
+            <Login></Login>
+          </Suspense>
+        ),
       },
       {
         path: "/register",
-        Component: Register,
+        element: (
+          <Suspense fallback={<Loading></Loading>}>
+            <Register></Register>
+          </Suspense>
+        ),
       },
     ],
   },
@@ -155,7 +175,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/forbidden",
-    Component: Forbidden,
+    element: (
+      <Suspense fallback={<Loading></Loading>}>
+        <Forbidden></Forbidden>
+      </Suspense>
+    ),
+  },
+  {
+    path: "*",
+    element: (
+      <Suspense fallback={<Loading></Loading>}>
+        <ErrorPage></ErrorPage>
+      </Suspense>
+    ),
   },
 ]);
 
