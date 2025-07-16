@@ -1,4 +1,4 @@
-# ![Logo](/favicon.png) TourNest — Tourism Management System
+# TourNest — Tourism Management System
 
 **TourNest** is a full-stack tourism and travel management platform where users can explore tour packages, book trips, apply as tour guides, share their stories, and securely make payments. It supports multiple user roles with robust access control, real-time updates, and a responsive user interface.
 
