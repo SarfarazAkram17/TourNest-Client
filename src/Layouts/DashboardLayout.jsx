@@ -70,7 +70,9 @@ const DashboardLayout = () => {
       {/* Sidebar */}
       <div className="drawer-side z-40 lg:fixed lg:top-0 lg:left-0 lg:h-screen">
         <label htmlFor="my-drawer-2" className="drawer-overlay lg:hidden"></label>
-        <ul className="menu bg-base-200 text-base-content w-60 p-4 h-full overflow-y-auto">
+
+        {/* ✅ Keep sidebar scrollable and single-column */}
+        <ul className="menu bg-base-200 text-base-content w-60 p-4 h-full overflow-y-auto flex flex-col flex-nowrap hide-scrollbar">
           {/* Logo */}
           <Link to="/">
             <img
@@ -80,7 +82,7 @@ const DashboardLayout = () => {
             />
           </Link>
 
-          {/* Links */}
+          {/* Navigation Links */}
           <li className="my-1">
             <NavLink to="/dashboard" end>
               <FiUser /> Manage Profile
