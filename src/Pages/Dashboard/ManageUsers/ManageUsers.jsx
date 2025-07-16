@@ -166,8 +166,8 @@ const ManageUsers = () => {
               <button
                 key={n}
                 onClick={() => handlePageChange(n + 1)}
-                className={`btn btn-sm text-white ${
-                  page === n + 1 ? "btn-primary" : "btn-outline"
+                className={`btn btn-sm ${
+                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
                 }`}
               >
                 {n + 1}

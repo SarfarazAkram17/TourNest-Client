@@ -38,8 +38,7 @@ const AllTrips = () => {
         Explore All Trips
       </h2>
       <p className="text-center text-gray-600 max-w-2xl mx-auto mb-10 text-sm md:text-base">
-        Discover a curated selection of travel experiences across Bangladesh and
-        beyond. Whether you're looking for adventure, relaxation, or cultural
+        Discover a curated selection of travel experiences across Bangladesh. Whether you're looking for adventure, relaxation, or cultural
         exploration, our tour packages offer something for every kind of
         traveler.
       </p>

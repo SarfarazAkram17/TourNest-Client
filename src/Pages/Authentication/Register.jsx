@@ -11,7 +11,7 @@ import SocialLogin from "../../Components/Common/SocialLogin";
 
 const Register = () => {
   const axiosInstance = useAxios();
-  const { createUser, updateUserProfile } = useAuth();
+  const { createUser, updateUserProfile, setToken } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,11 +50,16 @@ const Register = () => {
     // Upload image to Cloudinary
     const imageData = new FormData();
     imageData.append("file", selectedFile);
-    imageData.append("upload_preset", import.meta.env.VITE_cloudinary_preset_name);
+    imageData.append(
+      "upload_preset",
+      import.meta.env.VITE_cloudinary_preset_name
+    );
 
     try {
       const imageRes = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_cloudinary_cloud_name}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_cloudinary_cloud_name
+        }/image/upload`,
         imageData
       );
 
@@ -80,6 +85,12 @@ const Register = () => {
 
       await axiosInstance.post("/users", userInfo);
 
+      const jwtRes = await axiosInstance.post("/jwt", { email });
+      if (jwtRes.data.token) {
+        localStorage.setItem("token", jwtRes.data.token);
+        setToken(jwtRes.data.token)
+      }
+      
       toast.success("Registered successfully");
       navigate(location.state || "/");
       reset();
@@ -114,12 +125,14 @@ const Register = () => {
               className="hidden"
             />
             {errors.photo && (
-              <p className="text-red-500 font-bold">
+              <p className="text-red-500 font-semibold text-xs mt-1">
                 Profile image is required.
               </p>
             )}
 
-            <label className="label font-semibold mt-4">Name</label>
+            <label className="label font-semibold mt-4 mb-2 text-xs">
+              Name
+            </label>
             <input
               type="text"
               {...register("name", { required: true, minLength: 6 })}
@@ -127,14 +140,16 @@ const Register = () => {
               placeholder="Enter your name"
             />
             {errors.name && (
-              <p className="text-red-500 font-bold">
+              <p className="text-red-500 font-semibold text-xs mt-1">
                 {errors.name.type === "required"
                   ? "Name is required."
                   : "Name must be at least 6 characters."}
               </p>
             )}
 
-            <label className="label font-semibold mt-4">Email</label>
+            <label className="label font-semibold mt-4 mb-2 text-xs">
+              Email
+            </label>
             <input
               type="email"
               {...register("email", { required: true })}
@@ -142,10 +157,14 @@ const Register = () => {
               placeholder="Enter your email"
             />
             {errors.email && (
-              <p className="text-red-500 font-bold">Email is required.</p>
+              <p className="text-red-500 font-semibold text-xs mt-1">
+                Email is required.
+              </p>
             )}
 
-            <label className="label font-semibold mt-4">Password</label>
+            <label className="label font-semibold mt-4 mb-2 text-xs">
+              Password
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}

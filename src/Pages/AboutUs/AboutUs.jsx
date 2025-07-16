@@ -59,9 +59,9 @@ const AboutUs = () => {
               <h4 className="text-2xl font-bold text-primary">Studify</h4>
             </div>
             <p className="text-gray-700 mb-4 leading-relaxed">
-              Studify is a collaborative academic platform where students can
-              create assignments, submit work, and peer-review submissions with
-              real-time scoring and feedback.
+              Studify is a group study platform where students can create
+              assignments, submit work, and peer-review submissions with scoring
+              and feedback.
             </p>
             <div className="flex justify-between items-center">
               <a

@@ -65,7 +65,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="navbar bg-base-100 p-3 shadow-sm relative">
+    <div className="navbar sticky z-50 bg-base-100 p-3 shadow-sm top-0">
       <div className="navbar-start">
         <div className="md:hidden">
           <button onClick={() => setIsOpen(!isOpen)} className="btn btn-ghost">
@@ -90,7 +90,7 @@ const Navbar = () => {
                 <img
                   src={user.photoURL}
                   alt="Profile"
-                  className="rounded-full w-11 mr-2 h-11 cursor-pointer"
+                  className="rounded-full object-cover w-13 mr-2 h-13 cursor-pointer"
                 />
               </div>
               <ul
@@ -105,14 +105,14 @@ const Navbar = () => {
                 >
                   Dashboard
                 </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-sm font-bold w-[50%] mx-auto btn-error"
+                >
+                  Logout
+                </button>
               </ul>
             </div>
-            <button
-              onClick={handleLogout}
-              className="btn btn-sm hidden md:block font-bold btn-error mr-2"
-            >
-              Logout
-            </button>
           </>
         ) : (
           <>
@@ -138,11 +138,7 @@ const Navbar = () => {
         >
           <ul className="menu space-y-2 text-center">
             {navLinks}
-            {user ? (
-              <button onClick={handleLogout} className="btn btn-error btn-sm">
-                Logout
-              </button>
-            ) : (
+            {!user && (
               <Link to="/register" onClick={() => setIsOpen(false)}>
                 <button className="btn bg-transparent w-full text-primary border-2 border-primary hover:bg-primary hover:text-white">
                   Register

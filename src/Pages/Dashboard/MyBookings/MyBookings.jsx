@@ -165,7 +165,9 @@ const MyBookings = () => {
                 {bookings.map((b, i) => (
                   <tr key={b._id}>
                     <td>{(page - 1) * 10 + i + 1}</td>
-                    <td>{b.packageName}</td>
+                    <td className="truncate max-w-[50px]" title={b.packageName}>
+                      {b.packageName}
+                    </td>
                     <td>{b.tourGuideName}</td>
                     <td>
                       {new Date(b.tourDate).toLocaleDateString("en-BD", {
@@ -176,14 +178,30 @@ const MyBookings = () => {
                     </td>
                     <td>৳{b.price.toLocaleString("en-BD")}</td>
                     <td className="capitalize">
-                      {b.status !== "pending" ? (
-                        b.status === "cancelled" ? (
-                          <span className="text-red-500">{b.status}</span>
-                        ) : (
-                          b.status
-                        )
-                      ) : (
-                        "-"
+                      {b.status === "pending" && (
+                        <span className="text-purple-500 font-semibold">
+                          {b.status}
+                        </span>
+                      )}
+                      {b.status === "in review" && (
+                        <span className="text-blue-500 font-semibold">
+                          {b.status}
+                        </span>
+                      )}
+                      {b.status === "rejected" && (
+                        <span className="text-pink-500 font-semibold">
+                          {b.status}
+                        </span>
+                      )}
+                      {b.status === "accepted" && (
+                        <span className="text-green-500 font-semibold">
+                          {b.status}
+                        </span>
+                      )}
+                      {b.status === "cancelled" && (
+                        <span className="text-red-500 font-semibold">
+                          {b.status}
+                        </span>
                       )}
                     </td>
                     <td>

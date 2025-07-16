@@ -10,7 +10,7 @@ import SocialLogin from "../../Components/Common/SocialLogin";
 const Login = () => {
   const axiosInstance = useAxios();
   const [showPassword, setShowPassword] = useState(false);
-  const { loginUser, forgotPassword } = useAuth();
+  const { loginUser, forgotPassword, setToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,12 +32,18 @@ const Login = () => {
     const password = formData.password.trim();
 
     loginUser(email, password)
-      .then(() => {
+      .then(async () => {
         toast.success("You logged in successfully");
         reset();
 
-        axiosInstance.post("/users", { email });
+        await axiosInstance.post("/users", { email });
 
+        const jwtRes = await axiosInstance.post("/jwt", { email });
+        if (jwtRes.data.token) {
+          localStorage.setItem("token", jwtRes.data.token);
+          setToken(jwtRes.data.token)
+        }
+        
         navigate(location.state || "/");
       })
       .catch((error) => {
@@ -56,7 +62,7 @@ const Login = () => {
     forgotPassword(email)
       .then(() => {
         toast.success("Password reset email send.");
-        toast.warn('Also check email in the spam section')
+        toast.warn("Also check email in the spam section");
       })
       .catch((err) => {
         toast.error(`Error in password change: ${err.message}`);

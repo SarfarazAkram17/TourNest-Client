@@ -50,7 +50,7 @@ const StoryDetails = () => {
             key={i}
             src={img}
             alt={`story-img-${i}`}
-            className="w-full object-cover rounded-lg shadow"
+            className="w-full h-52 rounded-lg shadow"
           />
         ))}
       </div>

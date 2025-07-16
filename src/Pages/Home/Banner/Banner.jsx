@@ -36,7 +36,7 @@ const Banner = () => {
       {slides.map((slide, idx) => (
         <div
           key={idx}
-          className="relative rounded-2xl overflow-hidden max-h-[400px] h-[60vh] flex items-center justify-center"
+          className="relative rounded-xl overflow-hidden max-h-[400px] h-[60vh] flex items-center justify-center"
         >
           {/* Background Image Layer */}
           <div

@@ -33,7 +33,7 @@ const MyAssignedTours = () => {
     },
     keepPreviousData: true,
     enabled: !!userEmail,
-    refetchInterval: 3000,
+    refetchInterval: 1000,
   });
 
   const assignedTours = data?.bookings || [];
@@ -140,7 +140,7 @@ const MyAssignedTours = () => {
                 {assignedTours.map((tour, i) => (
                   <tr key={tour._id}>
                     <td>{(page - 1) * 10 + i + 1}</td>
-                    <td>{tour.packageName}</td>
+                    <td className="truncate max-w-[50px]" title={tour.packageName}>{tour.packageName}</td>
                     <td>{tour.touristName}</td>
                     <td>
                       {new Date(tour.tourDate).toLocaleDateString("en-BD", {

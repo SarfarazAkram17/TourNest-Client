@@ -223,7 +223,7 @@ const JoinAsTourGuide = () => {
             <label htmlFor="experience" className="text-xs text-black/60 font-semibold mb-1 block">Experience</label>
             <input
               id="experience"
-              type="text"
+              type="number"
               placeholder="Years of Experience"
               {...register("experience", {
                 required: "Experience is required",

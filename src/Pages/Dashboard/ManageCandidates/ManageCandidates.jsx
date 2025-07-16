@@ -209,7 +209,7 @@ const ManageCandidates = () => {
                     <td>{app.region}</td>
                     <td>{app.district}</td>
                     <td>{app.phone}</td>
-                    <td className="flex gap-1 justify-center items-center flex-wrap">
+                    <td className="flex gap-1 justify-center items-center">
                       <button
                         className="btn btn-xs btn-info text-white"
                         onClick={() => handleView(app)}

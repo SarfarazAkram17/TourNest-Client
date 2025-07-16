@@ -4,15 +4,15 @@ import useAxios from "../../Hooks/useAxios";
 import useAuth from "../../Hooks/useAuth";
 
 const SocialLogin = ({ state, message }) => {
-    const axiosInstance = useAxios();
-  const { continueWithGoogle } = useAuth();
+  const axiosInstance = useAxios();
+  const { continueWithGoogle, setToken } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
     continueWithGoogle()
-      .then((res) => {
-          const email = res.user?.providerData[0]?.email;
-          
+      .then(async (res) => {
+        const email = res.user?.providerData[0]?.email;
+
         const userInfo = {
           email,
           name: res.user.displayName,
@@ -20,19 +20,22 @@ const SocialLogin = ({ state, message }) => {
           created_at: new Date().toISOString(),
           last_log_in: new Date().toISOString(),
         };
-        
+
         axiosInstance.post("/users", userInfo);
-        
+
+        const jwtRes = await axiosInstance.post("/jwt", { email });
+        if (jwtRes.data.token) {
+          localStorage.setItem("token", jwtRes.data.token);
+          setToken(jwtRes.data.token)
+        }
+
         navigate(state || "/");
         toast.success(message);
       })
       .catch((error) => toast.error(error.message));
   };
   return (
-    <button
-      onClick={handleGoogleLogin}
-      className="btn"
-    >
+    <button onClick={handleGoogleLogin} className="btn">
       <svg
         aria-label="Google logo"
         width="25"

@@ -24,7 +24,7 @@ body {
 }
 
 @media screen and (min-width: 320px) {
-  body{
+  #root{
     overflow-x: hidden;
   }
 }

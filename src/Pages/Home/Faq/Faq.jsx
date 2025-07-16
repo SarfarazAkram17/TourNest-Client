@@ -30,7 +30,7 @@ const Faq = () => {
     {
       question: "How does the payment process work?",
       answer:
-        "After booking, you’ll see a 'Pay' button for pending bookings. Clicking it takes you to the Stripe payment page.",
+        "After booking, you’ll see a 'Pay' button for pending bookings in My Bookings page on dashboard. Clicking it takes you to the Stripe payment page.",
     },
     {
       question: "Can I cancel a tour I booked?",
@@ -55,7 +55,7 @@ const Faq = () => {
     {
       question: "Are the stories public?",
       answer:
-        "Yes, stories are visible on the homepage and Community page. Other users can read and share them on Facebook.",
+        "Yes, stories are visible on the homepage and Community page. Other users can read and share them on Facebook after login.",
     },
     {
       question: "Can I choose my tour guide?",

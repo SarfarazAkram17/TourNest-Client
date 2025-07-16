@@ -414,8 +414,8 @@ const ManageGuideProfile = () => {
                   </label>
                   <textarea
                     {...register("bio", { required: "Bio is required" })}
-                    className="textarea textarea-bordered w-full"
-                    placeholder="Short Bio"
+                    className="textarea textarea-bordered w-full resize-none"
+                    placeholder="Bio"
                   />
                   {errors.bio && (
                     <p className="text-red-500 text-xs font-semibold mt-2">{errors.bio.message}</p>

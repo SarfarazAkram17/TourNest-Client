@@ -31,7 +31,7 @@ const ManageProfile = () => {
       return res.data;
     },
     enabled: !roleLoading && role === "admin",
-    refetchInterval: 3000,
+    refetchInterval: 1000,
   });
 
   useEffect(() => {
@@ -143,11 +143,11 @@ const ManageProfile = () => {
       )}
 
       <div className="shadow-lg p-6 bg-white rounded-lg">
-        <div className="flex flex-col md:flex-row gap-8 items-center">
+        <div className="flex flex-col md:flex-row gap-8 md:items-center">
           <img
             src={user?.photoURL}
             alt="Profile"
-            className="w-40 h-40 rounded-full object-cover border-4 border-primary shadow"
+            className="w-44 h-44 rounded-full object-cover border-4 border-primary shadow"
           />
           <div className="flex-1 space-y-3">
             <p>

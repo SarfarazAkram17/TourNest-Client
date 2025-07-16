@@ -11,7 +11,6 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../../../firebase.config";
-import useAxios from "../../Hooks/useAxios";
 import { useQueryClient } from "@tanstack/react-query";
 
 const googleProvider = new GoogleAuthProvider();
@@ -19,7 +18,6 @@ googleProvider.addScope("email");
 
 const AuthProvider = ({ children }) => {
   const queryClient = useQueryClient();
-  const axiosInstance = useAxios();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
@@ -58,32 +56,16 @@ const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-
-      if (currentUser?.email || user?.providerData?.[0]?.email) {
-        try {
-          const res = await axiosInstance.post("/jwt", {
-            email: currentUser.email || currentUser.providerData[0].email,
-          });
-
-          if (res.data.token) {
-            localStorage.setItem("token", res.data.token);
-            setToken(res.data.token);
-          }
-        } catch (err) {
-          localStorage.removeItem("token");
-          setToken(null);
-        }
-      } else {
-        localStorage.removeItem("token");
-        setToken(null);
-      }
+      const token = localStorage.getItem('token')
+      setToken(token)
     });
-
-    return () => unsubscribe();
-  }, [axiosInstance, user?.providerData]);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const authInfo = {
     user,
@@ -91,6 +73,7 @@ const AuthProvider = ({ children }) => {
     userEmail,
     loading,
     token,
+    setToken,
     createUser,
     loginUser,
     updateUserProfile,

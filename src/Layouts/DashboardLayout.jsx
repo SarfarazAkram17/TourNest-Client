@@ -50,7 +50,7 @@ const DashboardLayout = () => {
             <img
               src={user.photoURL}
               alt={user.displayName}
-              className="h-11 w-11"
+              className="h-14 w-14 object-cover rounded-full"
             />
             <span>{user.displayName} Dashboard</span>
           </div>

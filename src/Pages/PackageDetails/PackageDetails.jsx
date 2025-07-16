@@ -11,8 +11,10 @@ import Swal from "sweetalert2";
 import Select from "react-select";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import TourGuideCard from "../../Components/Shared/TourGuideCard";
+import { FaArrowUp, FaArrowDown } from "react-icons/fa6";
 
 const PackageDetails = () => {
+  const [showAllGuide, setShowAllGuide] = useState(false);
   const { id } = useParams();
   const axiosSecure = useAxiosSecure();
   const axiosInstance = useAxios();
@@ -38,6 +40,8 @@ const PackageDetails = () => {
     },
   });
 
+  const guidesForCard = showAllGuide ? guides : guides?.slice(0, 3);
+
   const {
     register,
     handleSubmit,
@@ -57,11 +61,11 @@ const PackageDetails = () => {
     if (pkg && user) {
       setValue("packageName", pkg.title);
       setValue("touristName", user.displayName);
-      setValue("touristEmail", user.email);
+      setValue("touristEmail", userEmail);
       setValue("touristImage", user.photoURL);
       setValue("tourPrice", pkg.price);
     }
-  }, [pkg, user, setValue]);
+  }, [pkg, user, userEmail, setValue]);
 
   useEffect(() => {
     setValue("tourDate", selectedDate);
@@ -88,7 +92,7 @@ const PackageDetails = () => {
       packageId: id,
       packageName: pkg.title,
       touristName: user.displayName,
-      touristEmail: user.email,
+      touristEmail: userEmail,
       touristImage: user.photoURL,
       price: pkg.price,
       tourDate: data.tourDate,
@@ -168,40 +172,40 @@ const PackageDetails = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 md:grid-cols-6 grid-rows-2 gap-3 md:gap-4 mb-12 h-[450px]">
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 mb-12">
         {pkg.images[0] && (
           <img
             src={pkg.images[0]}
             alt="Gallery 1"
-            className="col-span-3 row-span-2 object-cover w-full h-full rounded-xl shadow-md"
+            className="sm:col-span-3 sm:row-span-2 object-cover w-full h-full rounded-xl shadow-md"
           />
         )}
         {pkg.images[1] && (
           <img
             src={pkg.images[1]}
             alt="Gallery 2"
-            className="col-span-1 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
+            className="sm:col-span-1 sm:row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
           />
         )}
         {pkg.images[2] && (
           <img
             src={pkg.images[2]}
             alt="Gallery 3"
-            className="col-span-2 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
+            className="sm:col-span-2 sm:row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
           />
         )}
         {pkg.images[3] && (
           <img
             src={pkg.images[3]}
             alt="Gallery 4"
-            className="col-span-2 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
+            className="sm:col-span-2 sm:row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
           />
         )}
         {pkg.images[4] && (
           <img
             src={pkg.images[4]}
             alt="Gallery 5"
-            className="col-span-1 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
+            className="sm:col-span-1 sm:row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
           />
         )}
         {pkg.images.slice(5).map((img, idx) => (
@@ -209,7 +213,7 @@ const PackageDetails = () => {
             key={idx + 5}
             src={img}
             alt={`Gallery ${idx + 6}`}
-            className="col-span-1 row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
+            className="sm:col-span-1 sm:row-span-1 object-cover w-full h-full rounded-xl shadow-sm"
           />
         ))}
       </div>
@@ -266,9 +270,25 @@ const PackageDetails = () => {
           Meet Our Tour Guides
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {guides.map((guide) => (
+          {guidesForCard.map((guide) => (
             <TourGuideCard key={guide._id} guide={guide} />
           ))}
+        </div>
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => setShowAllGuide(!showAllGuide)}
+            className="btn btn-secondary rounded-lg"
+          >
+            {showAllGuide ? (
+              <span className="flex gap-2 items-center">
+                Show Less <FaArrowUp size={15} />
+              </span>
+            ) : (
+              <span className="flex gap-2 items-center">
+                Show All <FaArrowDown size={15} />
+              </span>
+            )}
+          </button>
         </div>
       </div>
 

@@ -18,7 +18,6 @@
     "firebase": "^11.10.0",
     "framer-motion": "^12.23.5",
     "lottie-react": "^2.4.1",
-    "moment": "^2.30.1",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
     "react-datepicker": "^8.4.0",
