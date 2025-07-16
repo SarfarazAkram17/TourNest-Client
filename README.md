@@ -1,12 +1,14 @@
-# <img src='/favicon.png' width="32" /> TourNest — Tourism Management System
+# ![Logo](/favicon.png) TourNest — Tourism Management System
 
 **TourNest** is a full-stack tourism and travel management platform where users can explore tour packages, book trips, apply as tour guides, share their stories, and securely make payments. It supports multiple user roles with robust access control, real-time updates, and a responsive user interface.
 
 ---
 
-## 🔗 Live Links
+## 🔗 Live Project
 
-- 🌐 **Frontend**: [https://tournest-sarfaraz-akram.netlify.app](https://tournest-sarfaraz-akram.netlify.app)
+- 🌐 **Website**: [https://tournest-sarfaraz-akram.netlify.app](https://tournest-sarfaraz-akram.netlify.app)
+- ⚙️ **Backend Repository**: [GitHub – TourNest Server](https://github.com/SarfarazAkram17/TourNest-Server)
+
 
 ### 🔐 Admin Credentials
 
@@ -129,3 +131,8 @@
 - 🌍 **Portfolio**: [https://sarfarazakram.netlify.app](https://sarfarazakram.netlify.app)
 - 📧 **Email**: sarfaraz.akram055@gmail.com
 - 🐱 **GitHub**: [Sarfaraz Akram](https://github.com/SarfarazAkram17)
+
+# 🛠️ Getting Started
+
+git clone https://github.com/SarfarazAkram17/TourNest-Client <br />
+cd TourNest-Client
