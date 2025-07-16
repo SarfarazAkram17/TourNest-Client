@@ -9,10 +9,10 @@ import {
   FiFolderPlus,
   FiBarChart2,
 } from "react-icons/fi";
-import Footer from "../Components/Common/Footer";
-import useUserRole from "../Hooks/useUserRole";
 import { MdBookmarkAdded } from "react-icons/md";
 import { FaIdBadge, FaUserTie } from "react-icons/fa";
+import Footer from "../Components/Common/Footer";
+import useUserRole from "../Hooks/useUserRole";
 import useAuth from "../Hooks/useAuth";
 
 const DashboardLayout = () => {
@@ -20,10 +20,12 @@ const DashboardLayout = () => {
   const { role, roleLoading } = useUserRole();
 
   return (
-    <div className="drawer lg:drawer-open">
+    <div className="drawer lg:drawer-open h-screen">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content">
-        {/* Navbar */}
+
+      {/* Main Content Area */}
+      <div className="drawer-content flex flex-col overflow-y-auto">
+        {/* Mobile Navbar */}
         <div className="navbar bg-base-300 w-full lg:hidden">
           <div className="flex-none">
             <label
@@ -48,24 +50,28 @@ const DashboardLayout = () => {
           </div>
           <div className="mx-2 font-bold px-2 flex gap-2 items-center">
             <img
-              src={user.photoURL}
-              alt={user.displayName}
+              src={user?.photoURL}
+              alt={user?.displayName}
               className="h-14 w-14 object-cover rounded-full"
             />
-            <span>{user.displayName} Dashboard</span>
+            <span>{user?.displayName} Dashboard</span>
           </div>
         </div>
 
+        {/* Page Content */}
         <div className="mt-12 mb-16">
-          <Outlet></Outlet>
+          <Outlet />
         </div>
-        <Footer></Footer>
+
+        {/* Footer */}
+        <Footer />
       </div>
 
-      <div className="drawer-side">
-        <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-        <ul className="menu bg-base-200 text-base-content min-h-full w-60 p-4">
-          {/* Sidebar content */}
+      {/* Sidebar */}
+      <div className="drawer-side z-40 lg:fixed lg:top-0 lg:left-0 lg:h-screen">
+        <label htmlFor="my-drawer-2" className="drawer-overlay lg:hidden"></label>
+        <ul className="menu bg-base-200 text-base-content w-60 p-4 h-full overflow-y-auto">
+          {/* Logo */}
           <Link to="/">
             <img
               src={logo}
@@ -74,6 +80,7 @@ const DashboardLayout = () => {
             />
           </Link>
 
+          {/* Links */}
           <li className="my-1">
             <NavLink to="/dashboard" end>
               <FiUser /> Manage Profile
@@ -81,13 +88,11 @@ const DashboardLayout = () => {
           </li>
 
           {!roleLoading && role === "tour guide" && (
-            <>
-              <li className="my-1">
-                <NavLink to="/dashboard/manageGuideProfile">
-                  <FaIdBadge /> Manage Guide Profile
-                </NavLink>
-              </li>
-            </>
+            <li className="my-1">
+              <NavLink to="/dashboard/manageGuideProfile">
+                <FaIdBadge /> Manage Guide Profile
+              </NavLink>
+            </li>
           )}
 
           <li className="my-1">
@@ -97,13 +102,11 @@ const DashboardLayout = () => {
           </li>
 
           {!roleLoading && role === "tour guide" && (
-            <>
-              <li className="my-1">
-                <NavLink to="/dashboard/myAssignedTours">
-                  <FiBarChart2 size={17} /> My Assigned Tours
-                </NavLink>
-              </li>
-            </>
+            <li className="my-1">
+              <NavLink to="/dashboard/myAssignedTours">
+                <FiBarChart2 size={17} /> My Assigned Tours
+              </NavLink>
+            </li>
           )}
 
           {!roleLoading && role === "admin" && (
@@ -141,13 +144,11 @@ const DashboardLayout = () => {
           </li>
 
           {!roleLoading && role === "tourist" && (
-            <>
-              <li className="my-1">
-                <NavLink to="/dashboard/joinAsTourGuide">
-                  <FaUserTie /> Join as tour guide
-                </NavLink>
-              </li>
-            </>
+            <li className="my-1">
+              <NavLink to="/dashboard/joinAsTourGuide">
+                <FaUserTie /> Join as Tour Guide
+              </NavLink>
+            </li>
           )}
         </ul>
       </div>
