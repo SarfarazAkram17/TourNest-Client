@@ -8,13 +8,12 @@ const axiosSecure = axios.create({
 });
 
 const useAxiosSecure = () => {
-  const { logOutUser } = useAuth();
+  const { logOutUser, token } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     const requestInterceptor = axiosSecure.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem("token");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -44,7 +43,7 @@ const useAxiosSecure = () => {
       axiosSecure.interceptors.request.eject(requestInterceptor);
       axiosSecure.interceptors.response.eject(responseInterceptor);
     };
-  }, [logOutUser, navigate]);
+  }, [logOutUser, navigate, token]);
   return axiosSecure;
 };
 

@@ -20,6 +20,7 @@ const AuthProvider = ({ children }) => {
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [tokenLoading, setTokenLoading] = useState(true);
   const [token, setToken] = useState(null);
   const userEmail = user?.email || user?.providerData?.[0]?.email || "";
   const uid = user?.uid || "";
@@ -59,8 +60,26 @@ const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      const token = localStorage.getItem('token')
-      setToken(token)
+
+      const tokenString = localStorage.getItem("token");
+      if (tokenString) {
+        setTokenLoading(true);
+        const parsedToken = JSON.parse(tokenString);
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        if (now - parsedToken.timestamp > twentyFourHours) {
+          localStorage.removeItem("token");
+          setToken(null);
+          setLoading(false);
+        } else {
+          setToken(parsedToken.value);
+          setTokenLoading(false);
+        }
+      } else {
+        setToken(null);
+        setTokenLoading(false);
+      }
     });
     return () => {
       unsubscribe();
@@ -73,6 +92,8 @@ const AuthProvider = ({ children }) => {
     userEmail,
     loading,
     token,
+    tokenLoading,
+    setTokenLoading,
     setToken,
     createUser,
     loginUser,

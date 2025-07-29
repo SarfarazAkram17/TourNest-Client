@@ -10,7 +10,7 @@ import SocialLogin from "../../Components/Common/SocialLogin";
 const Login = () => {
   const axiosInstance = useAxios();
   const [showPassword, setShowPassword] = useState(false);
-  const { loginUser, forgotPassword, setToken } = useAuth();
+  const { loginUser, forgotPassword, setToken, setTokenLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +24,16 @@ const Login = () => {
   } = useForm();
 
   const email = watch("email")?.trim() || "";
+
+  const saveTokenWithExpiry = (token) => {
+    const tokenObj = {
+      value: token,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("token", JSON.stringify(tokenObj));
+    setToken(token);
+    setTokenLoading(false)
+  };
 
   const handleLogin = (formData) => {
     setLoading(true);
@@ -40,10 +50,9 @@ const Login = () => {
 
         const jwtRes = await axiosInstance.post("/jwt", { email });
         if (jwtRes.data.token) {
-          localStorage.setItem("token", jwtRes.data.token);
-          setToken(jwtRes.data.token)
+          saveTokenWithExpiry(jwtRes.data.token);
         }
-        
+
         navigate(location.state || "/");
       })
       .catch((error) => {

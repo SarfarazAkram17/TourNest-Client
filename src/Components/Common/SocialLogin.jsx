@@ -5,8 +5,18 @@ import useAuth from "../../Hooks/useAuth";
 
 const SocialLogin = ({ state, message }) => {
   const axiosInstance = useAxios();
-  const { continueWithGoogle, setToken } = useAuth();
+  const { continueWithGoogle, setToken, setTokenLoading } = useAuth();
   const navigate = useNavigate();
+
+  const saveTokenWithExpiry = (token) => {
+    const tokenObj = {
+      value: token,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("token", JSON.stringify(tokenObj));
+    setToken(token);
+    setTokenLoading(false)
+  };
 
   const handleGoogleLogin = () => {
     continueWithGoogle()
@@ -25,8 +35,7 @@ const SocialLogin = ({ state, message }) => {
 
         const jwtRes = await axiosInstance.post("/jwt", { email });
         if (jwtRes.data.token) {
-          localStorage.setItem("token", jwtRes.data.token);
-          setToken(jwtRes.data.token)
+          saveTokenWithExpiry(jwtRes.data.token);
         }
 
         navigate(state || "/");

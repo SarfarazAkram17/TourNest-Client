@@ -11,7 +11,8 @@ import SocialLogin from "../../Components/Common/SocialLogin";
 
 const Register = () => {
   const axiosInstance = useAxios();
-  const { createUser, updateUserProfile, setToken } = useAuth();
+  const { createUser, updateUserProfile, setToken, setTokenLoading } =
+    useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,6 +42,16 @@ const Register = () => {
       setPreview(URL.createObjectURL(file));
       clearErrors("photo");
     }
+  };
+
+  const saveTokenWithExpiry = (token) => {
+    const tokenObj = {
+      value: token,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("token", JSON.stringify(tokenObj));
+    setToken(token);
+    setTokenLoading(false);
   };
 
   const handleRegister = async (data) => {
@@ -87,10 +98,9 @@ const Register = () => {
 
       const jwtRes = await axiosInstance.post("/jwt", { email });
       if (jwtRes.data.token) {
-        localStorage.setItem("token", jwtRes.data.token);
-        setToken(jwtRes.data.token)
+        saveTokenWithExpiry(jwtRes.data.token);
       }
-      
+
       toast.success("Registered successfully");
       navigate(location.state || "/");
       reset();
