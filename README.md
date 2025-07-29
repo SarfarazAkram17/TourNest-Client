@@ -9,12 +9,6 @@
 - 🌐 **Website**: [https://tournest-sarfaraz-akram.netlify.app](https://tournest-sarfaraz-akram.netlify.app)
 - ⚙️ **Backend Repository**: [GitHub – TourNest Server](https://github.com/SarfarazAkram17/TourNest-Server)
 
-
-### 🔐 Admin Credentials
-
-- ✉️ **Email**: `sarfaraz.akram055@gmail.com`
-- 🔑 **Password**: `Sarfaraz1234`
-
 ---
 
 ## 🚀 Features Overview
