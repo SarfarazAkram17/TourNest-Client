@@ -156,7 +156,7 @@ const Login = () => {
           <div className="divider my-4">Or continue with</div>
           <SocialLogin
             state={location.state}
-            message={"You registered successfully"}
+            message={"You login successfully"}
           ></SocialLogin>
         </div>
       </div>

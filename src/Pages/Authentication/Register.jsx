@@ -244,7 +244,7 @@ const Register = () => {
 
           <div className="divider my-4">Or continue with</div>
           <SocialLogin
-            message="Registration successful"
+            message="You registered successful"
             state={location.state}
           />
         </div>
