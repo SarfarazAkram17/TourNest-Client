@@ -1,7 +1,7 @@
 import { Link, NavLink } from "react-router";
 import logo from "../../assets/logo.png";
 import { RxCross2 } from "react-icons/rx";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { RiMenu2Line } from "react-icons/ri";
 import useAuth from "../../Hooks/useAuth";
 import { toast } from "react-toastify";
@@ -9,7 +9,6 @@ import { toast } from "react-toastify";
 const Navbar = () => {
   const { user, userEmail, logOutUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
 
   const navLinks = (
     <>
@@ -53,16 +52,6 @@ const Navbar = () => {
         toast.error(error.message);
       });
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <div className="navbar sticky z-50 bg-base-100 p-3 shadow-sm top-0">
@@ -133,7 +122,6 @@ const Navbar = () => {
       {/* Mobile Dropdown */}
       {isOpen && (
         <div
-          ref={dropdownRef}
           className="absolute top-full w-40 -mt-2 left-4 z-10 md:hidden bg-base-100 rounded-box p-2 place-items-center shadow"
         >
           <ul className="menu space-y-2 text-center">
