@@ -20,7 +20,7 @@ const DashboardLayout = () => {
   const { role, roleLoading } = useUserRole();
 
   return (
-    <div className="drawer lg:drawer-open h-screen">
+    <div className="xl:container mx-auto drawer lg:drawer-open h-screen">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
       {/* Main Content Area */}

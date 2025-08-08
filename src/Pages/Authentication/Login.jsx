@@ -133,7 +133,7 @@ const Login = () => {
             </div>
             <button
               disabled={loading}
-              className="btn btn-primary text-black mt-6"
+              className="btn btn-primary text-white mt-6"
             >
               {" "}
               {loading ? (
