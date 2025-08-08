@@ -11,6 +11,13 @@
 
 ---
 
+### 🔐 Admin Credentials
+
+- ✉️ **Email**: `sarfaraz.akram055@gmail.com`
+- 🔑 **Password**: `Sarfaraz1234`
+
+---
+
 ## 🚀 Features Overview
 
 ### 👥 User Roles
