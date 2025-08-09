@@ -65,7 +65,7 @@ const AboutUs = () => {
             </p>
             <div className="flex justify-between items-center">
               <a
-                href="https://assignment-11-sarfaraz-akram.netlify.app"
+                href="https://studify-sarfaraz-akram.netlify.app"
                 className="text-blue-600 hover:underline font-medium"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -98,7 +98,7 @@ const AboutUs = () => {
             </p>
             <div className="flex justify-between items-center">
               <a
-                href="https://assignment-10-sarfaraz-akram.netlify.app"
+                href="https://taskwave-sarfaraz-akram.netlify.app"
                 className="text-blue-600 hover:underline font-medium"
                 target="_blank"
                 rel="noopener noreferrer"

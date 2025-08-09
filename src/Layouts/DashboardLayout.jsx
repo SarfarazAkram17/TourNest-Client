@@ -18,7 +18,6 @@ import useAuth from "../Hooks/useAuth";
 const DashboardLayout = () => {
   const { user } = useAuth();
   const { role, roleLoading } = useUserRole();
-
   return (
     <div className="xl:container mx-auto drawer lg:drawer-open h-screen">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
