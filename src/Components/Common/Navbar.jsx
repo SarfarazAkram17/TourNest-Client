@@ -1,7 +1,7 @@
 import { Link, NavLink } from "react-router";
 import logo from "../../assets/logo.png";
 import { RxCross2 } from "react-icons/rx";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiMenu2Line } from "react-icons/ri";
 import useAuth from "../../Hooks/useAuth";
 import { toast } from "react-toastify";
@@ -9,6 +9,25 @@ import { toast } from "react-toastify";
 const Navbar = () => {
   const { user, userEmail, logOutUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef()
+
+    useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const navLinks = (
     <>
@@ -54,7 +73,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="navbar sticky z-50 bg-base-100 p-3 shadow-sm top-0">
+    <div ref={menuRef} className="navbar sticky z-50 bg-base-100 p-3 shadow-sm top-0">
       <div className="navbar-start">
         <div className="md:hidden">
           <button onClick={() => setIsOpen(!isOpen)} className="btn btn-ghost">
