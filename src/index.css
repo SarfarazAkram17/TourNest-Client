@@ -33,7 +33,7 @@ body {
 }
 
 @media screen and (min-width: 320px) {
-  #root{
+  html{
     overflow-x: hidden;
   }
 }

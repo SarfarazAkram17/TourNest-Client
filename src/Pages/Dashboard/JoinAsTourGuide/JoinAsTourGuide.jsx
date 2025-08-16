@@ -106,7 +106,7 @@ const JoinAsTourGuide = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4">
+    <div className="px-4">
       <h2 className="text-3xl font-bold mb-6 text-center text-primary">
         Join as a Tour Guide
       </h2>

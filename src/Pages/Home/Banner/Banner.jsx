@@ -26,7 +26,7 @@ const slides = [
 const Banner = () => {
   return (
     <Carousel
-      className="max-w-5xl mx-auto px-4 my-8"
+      className="max-w-6xl mx-auto px-4 my-8"
       autoPlay={true}
       infiniteLoop={true}
       showThumbs={false}
@@ -36,7 +36,7 @@ const Banner = () => {
       {slides.map((slide, idx) => (
         <div
           key={idx}
-          className="relative rounded-xl overflow-hidden max-h-[400px] h-[60vh] flex items-center justify-center"
+          className="relative rounded-xl overflow-hidden max-h-[400px] h-[70vh] flex items-center justify-center"
         >
           {/* Background Image Layer */}
           <div

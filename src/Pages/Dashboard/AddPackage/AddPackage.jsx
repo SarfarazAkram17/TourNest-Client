@@ -105,7 +105,7 @@ const AddPackage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-6">
+    <div className="bg-white px-4">
       <h2 className="text-3xl md:text-4xl text-center font-bold mb-2 text-primary">
         Add New Package
       </h2>

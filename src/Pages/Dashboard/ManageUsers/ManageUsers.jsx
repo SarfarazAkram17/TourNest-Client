@@ -72,7 +72,7 @@ const ManageUsers = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <h2 className="text-2xl font-bold mb-4 text-center text-primary">
         Manage Users
       </h2>

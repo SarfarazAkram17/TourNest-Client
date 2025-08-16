@@ -173,7 +173,7 @@ const ManageGuideProfile = () => {
     loading || (Object.keys(dirtyFields).length === 0 && selectedFile === null);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
+    <div className="px-4">
       <h2 className="text-3xl font-bold mb-6 text-primary">
         Manage Guide Profile
       </h2>

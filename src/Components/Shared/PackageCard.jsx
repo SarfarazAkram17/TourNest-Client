@@ -15,7 +15,7 @@ const PackageCard = ({ pkg }) => {
         <p className="text-sm text-gray-600">
           <span className="font-medium">Location:</span> {pkg.location}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 -mt-2">
           <span className="font-medium">Type:</span> {pkg.tourType}
         </p>
         <p className="text-sm text-gray-700 font-semibold">

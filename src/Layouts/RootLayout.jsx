@@ -5,7 +5,7 @@ import Footer from "../Components/Common/Footer";
 
 const RootLayout = () => {
   return (
-    <div id="root" className="xl:container mx-auto">
+    <div>
       <Navbar></Navbar>
       <Outlet></Outlet>
       <Footer></Footer>

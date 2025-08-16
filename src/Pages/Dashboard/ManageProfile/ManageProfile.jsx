@@ -123,7 +123,7 @@ const ManageProfile = () => {
     formData.name.trim() === user?.displayName && preview === user?.photoURL;
 
   return (
-    <div className="max-w-3xl mx-auto px-4">
+    <div className="px-4">
       <h2 className="text-3xl font-bold mb-8 text-primary">
         Welcome back, {user?.displayName} 👋
       </h2>

@@ -73,15 +73,16 @@ const Navbar = () => {
   };
 
   return (
-    <div ref={menuRef} className="navbar sticky z-50 bg-base-100 p-3 shadow-sm top-0">
+ <div ref={menuRef} className="bg-base-100 py-0 shadow sticky z-50 top-0">
+     <div className="navbar max-w-6xl mx-auto px-4">
       <div className="navbar-start">
-        <div className="md:hidden">
+        <div className="md:hidden mr-2">
           <button onClick={() => setIsOpen(!isOpen)} className="btn btn-ghost">
             {isOpen ? <RxCross2 size={20} /> : <RiMenu2Line size={20} />}
           </button>
         </div>
 
-        <Link to="/" className="ml-2">
+        <Link to="/">
           <img src={logo} alt="TourNest Logo" className="h-10 sm:h-12 w-auto" />
         </Link>
       </div>
@@ -156,6 +157,7 @@ const Navbar = () => {
         </div>
       )}
     </div>
+ </div>
   );
 };
 

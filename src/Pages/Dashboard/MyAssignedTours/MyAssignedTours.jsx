@@ -86,7 +86,7 @@ const MyAssignedTours = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <h2 className="text-3xl font-bold text-center text-primary mb-6">
         My Assigned Tours
       </h2>

@@ -121,12 +121,12 @@ const PaymentForm = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <h2 className="text-3xl font-bold text-center text-primary mb-4">
         Payment for {booking.packageName}
       </h2>
 
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-xl">
         <form
           onSubmit={handlePay}
           className="rounded-xl space-y-4 bg-white p-6 shadow-md"

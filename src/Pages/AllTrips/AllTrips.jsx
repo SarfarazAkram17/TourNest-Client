@@ -33,7 +33,7 @@ const AllTrips = () => {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="max-w-7xl mx-auto py-16 px-4 md:px-6 lg:px-8">
+    <div className="max-w-6xl mx-auto py-7 px-4">
       <h2 className="text-4xl font-bold mb-4 text-center text-primary">
         Explore All Trips
       </h2>

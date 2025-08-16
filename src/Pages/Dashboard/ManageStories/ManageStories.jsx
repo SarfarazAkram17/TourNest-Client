@@ -64,7 +64,7 @@ const ManageStories = () => {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-10">
         Manage Your Stories
       </h2>

@@ -30,7 +30,7 @@ const reasons = [
 
 const WhyChooseUs = () => {
   return (
-    <section className="max-w-5xl mx-auto px-4 py-12">
+    <section className="max-w-6xl mx-auto px-4 py-12">
     
       <motion.h2
         className="text-center text-3xl md:text-4xl font-bold text-primary mb-6"

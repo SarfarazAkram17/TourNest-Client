@@ -87,7 +87,7 @@ const MyBookings = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       {showConfetti && (
         <Confetti
           width={width}

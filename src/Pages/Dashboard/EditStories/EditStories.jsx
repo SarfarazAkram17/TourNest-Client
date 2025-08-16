@@ -126,7 +126,7 @@ const EditStories = () => {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6 text-center">
         Edit Your Story
       </h2>

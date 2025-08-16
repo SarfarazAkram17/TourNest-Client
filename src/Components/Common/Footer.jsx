@@ -42,15 +42,14 @@ const Footer = () => {
 
   return (
     <footer className="bg-base-300 mt-10">
-      <div className="px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="px-4 max-w-6xl mx-auto py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Logo + Name */}
         <div className="flex flex-col items-center md:items-start">
           <Link to="/">
             <img src={logo} alt="TourNest Logo" className="h-12 mb-2" />
           </Link>
-          <p className="font-bold text-lg">TourNest</p>
           <p className="text-sm text-gray-500 mt-1 font-semibold">
-            Explore Bangladesh with ease
+            Explore Bangladesh with ease.
           </p>
         </div>
 

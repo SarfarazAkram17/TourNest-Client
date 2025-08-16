@@ -19,7 +19,7 @@ const DashboardLayout = () => {
   const { user } = useAuth();
   const { role, roleLoading } = useUserRole();
   return (
-    <div className="xl:container mx-auto drawer lg:drawer-open h-screen">
+    <div className="max-w-6xl mx-auto drawer lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
       {/* Main Content Area */}
@@ -76,7 +76,7 @@ const DashboardLayout = () => {
           <Link to="/">
             <img
               src={logo}
-              className="h-16 w-auto mx-auto mb-4"
+              className="h-13 w-auto mb-4"
               alt="TourNest Logo"
             />
           </Link>
