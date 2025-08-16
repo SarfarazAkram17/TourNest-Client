@@ -241,7 +241,7 @@ const AddPackage = () => {
               />
               <textarea
                 placeholder="Activities"
-                className="textarea textarea-bordered w-full"
+                className="textarea textarea-bordered resize-none w-full"
                 {...register(`tourPlan.${index}.activities`, {
                   required: true,
                 })}
@@ -260,7 +260,7 @@ const AddPackage = () => {
             onClick={() =>
               append({ day: `Day ${fields.length + 1}`, activities: "" })
             }
-            className="btn btn-sm btn-outline btn-primary"
+            className="btn btn-sm btn-outline hover:text-white btn-primary"
           >
             + Add Day
           </button>

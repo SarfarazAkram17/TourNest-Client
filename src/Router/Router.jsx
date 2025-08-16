@@ -24,6 +24,7 @@ import ManageGuideProfile from "../Pages/Dashboard/ManageGuideProfile/ManageGuid
 import StoryDetails from "../Pages/StoryDetails/StoryDetails";
 import { lazy, Suspense } from "react";
 import Loading from "../Components/Loading/Loading";
+import Dashboard from "../Pages/Dashboard/Dashboard/Dashboard";
 
 const Home = lazy(() => import("../Pages/Home/Home/Home"));
 const AboutUs = lazy(() => import("../Pages/AboutUs/AboutUs"));
@@ -101,6 +102,10 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        Component: Dashboard,
+      },
+      {
+        path: "manageProfile",
         Component: ManageProfile,
       },
       {

@@ -9,6 +9,7 @@ import {
   FiFolderPlus,
   FiBarChart2,
 } from "react-icons/fi";
+import { TbLayoutDashboard } from "react-icons/tb";
 import { MdBookmarkAdded } from "react-icons/md";
 import { FaIdBadge, FaUserTie } from "react-icons/fa";
 import Footer from "../Components/Common/Footer";
@@ -84,28 +85,34 @@ const DashboardLayout = () => {
           {/* Navigation Links */}
           <li className="my-1">
             <NavLink to="/dashboard" end>
-              <FiUser /> Manage Profile
+              <TbLayoutDashboard size={18} /> Dashboard
+            </NavLink>
+          </li>
+
+          <li className="my-1">
+            <NavLink to="/dashboard/manageProfile">
+              <FiUser size={17} /> Manage Profile
             </NavLink>
           </li>
 
           {!roleLoading && role === "tour guide" && (
             <li className="my-1">
               <NavLink to="/dashboard/manageGuideProfile">
-                <FaIdBadge /> Manage Guide Profile
+                <FaIdBadge size={17} /> Manage Guide Profile
               </NavLink>
             </li>
           )}
 
           <li className="my-1">
             <NavLink to="/dashboard/myBookings">
-              <MdBookmarkAdded size={18} /> My Bookings
+              <MdBookmarkAdded size={20} /> My Bookings
             </NavLink>
           </li>
 
           {!roleLoading && role === "tour guide" && (
             <li className="my-1">
               <NavLink to="/dashboard/myAssignedTours">
-                <FiBarChart2 size={17} /> My Assigned Tours
+                <FiBarChart2 size={19} /> My Assigned Tours
               </NavLink>
             </li>
           )}
@@ -114,19 +121,19 @@ const DashboardLayout = () => {
             <>
               <li className="my-1">
                 <NavLink to="/dashboard/addPackage">
-                  <FiFolderPlus /> Add Package
+                  <FiFolderPlus size={16} /> Add Package
                 </NavLink>
               </li>
 
               <li className="my-1">
                 <NavLink to="/dashboard/manageUsers">
-                  <FiUsers /> Manage Users
+                  <FiUsers size={16} /> Manage Users
                 </NavLink>
               </li>
 
               <li className="my-1">
                 <NavLink to="/dashboard/manageCandidates">
-                  <FiClipboard /> Manage Candidates
+                  <FiClipboard size={16} /> Manage Candidates
                 </NavLink>
               </li>
             </>
@@ -134,20 +141,20 @@ const DashboardLayout = () => {
 
           <li className="my-1">
             <NavLink to="/dashboard/addStories">
-              <FiPackage /> Add Stories
+              <FiPackage size={16} /> Add Stories
             </NavLink>
           </li>
 
           <li className="my-1">
             <NavLink to="/dashboard/manageStories">
-              <FiBookOpen /> Manage Stories
+              <FiBookOpen size={16} /> Manage Stories
             </NavLink>
           </li>
 
           {!roleLoading && role === "tourist" && (
             <li className="my-1">
               <NavLink to="/dashboard/joinAsTourGuide">
-                <FaUserTie /> Join as Tour Guide
+                <FaUserTie size={17} /> Join as Tour Guide
               </NavLink>
             </li>
           )}

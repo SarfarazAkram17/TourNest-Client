@@ -162,7 +162,7 @@ const ManageProfile = () => {
             </p>
             <button
               onClick={handleEditClick}
-              className="btn btn-outline btn-primary mt-4 flex items-center gap-2"
+              className="btn btn-outline btn-primary hover:text-white mt-4 flex items-center gap-2"
             >
               <FiEdit3 />
               Edit Profile
