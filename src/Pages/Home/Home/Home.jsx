@@ -5,6 +5,7 @@ import Faq from '../Faq/Faq';
 import TravelTips from '../TravelTips/TravelTips';
 import WhyChooseUs from '../WhyChooseUs/WhyChooseUs';
 import TouristStorySection from '../TouristStorySection/TouristStorySection';
+import Statistics from '../Statistics/Statistics';
 
 const Home = () => {
     return (
@@ -15,6 +16,7 @@ const Home = () => {
             <TouristStorySection />
             <WhyChooseUs />
             <TravelTips />
+            <Statistics></Statistics>
             <Faq />
         </div>
     );
