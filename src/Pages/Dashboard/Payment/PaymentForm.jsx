@@ -126,7 +126,7 @@ const PaymentForm = () => {
         Payment for {booking.packageName}
       </h2>
 
-      <div className="max-w-xl">
+      <div className="max-w-lg mx-auto">
         <form
           onSubmit={handlePay}
           className="rounded-xl space-y-4 bg-white p-6 shadow-md"

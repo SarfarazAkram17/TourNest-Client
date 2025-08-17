@@ -5,13 +5,8 @@ import axios from "axios";
 import useAuth from "../../../Hooks/useAuth";
 import useUserRole from "../../../Hooks/useUserRole";
 import { Link } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-import Loading from "../../../Components/Loading/Loading";
-import AdminStats from "./AdminStats";
 
 const ManageProfile = () => {
-  const axiosSecure = useAxiosSecure();
   const { user, userEmail, updateUserProfile } = useAuth();
   const { role, roleLoading } = useUserRole();
 
@@ -24,17 +19,7 @@ const ManageProfile = () => {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { data: stats = {}, isLoading } = useQuery({
-    queryKey: ["adminStats"],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/admin/stats?email=${userEmail}`);
-      return res.data;
-    },
-    enabled: !roleLoading && role === "admin",
-    refetchInterval: 1000,
-  });
-
-  useEffect(() => {
+useEffect(() => {
     if (user?.photoURL && !preview) {
       setPreview(user.photoURL);
     }
@@ -127,20 +112,6 @@ const ManageProfile = () => {
       <h2 className="text-3xl font-bold mb-8 text-primary">
         Welcome back, {user?.displayName} 👋
       </h2>
-
-      {!roleLoading && role === "admin" && (
-        <div className="my-10">
-          <h3 className="text-2xl font-bold mb-4 text-gray-800">
-            Admin Dashboard Stats
-          </h3>
-
-          {isLoading ? (
-            <Loading></Loading>
-          ) : (
-            <AdminStats stats={stats}></AdminStats>
-          )}
-        </div>
-      )}
 
       <div className="shadow-lg p-6 bg-white rounded-lg">
         <div className="flex flex-col md:flex-row gap-8 md:items-center">

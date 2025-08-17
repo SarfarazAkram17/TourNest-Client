@@ -1,9 +1,9 @@
-import React from 'react';
+
 
 const TouristDashboard = () => {
     return (
         <div>
-            
+            tourist
         </div>
     );
 };
