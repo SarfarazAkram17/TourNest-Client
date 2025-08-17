@@ -39,10 +39,13 @@ const TourGuideDashboard = () => {
   const { stats, tourDistribution, toursPerPackage } = dashboardData;
 
   const COLORS = ["#00C49F", "#0088FE", "#FF0000"];
+  const tours = tourDistribution.filter((item) => item.value > 0);
 
   return (
     <div className="px-4 space-y-8">
-      <h1 className="text-center text-3xl sm:text-4xl text-primary font-extrabold">Dashboard</h1>
+      <h1 className="text-center text-3xl sm:text-4xl text-primary font-extrabold">
+        Dashboard
+      </h1>
 
       {/* Stat Cards */}
       <TourGuideStats stats={stats} />
@@ -50,26 +53,32 @@ const TourGuideDashboard = () => {
       {/* Tour Distribution */}
       <div className="bg-white rounded-xl shadow-md p-4">
         <h3 className="text-lg font-semibold mb-4">Tour Distribution</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={tourDistribution}
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              dataKey="value"
-              label={({ name, value }) => `${name} ${value}`}
-            >
-              {tourDistribution.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
+        {tours.length === 0 ? (
+          <p className="font-semibold h-[200px] flex justify-center items-center">
+            No assigned tours yet.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={tourDistribution.filter((item) => item.value > 0)}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                dataKey="value"
+                label={({ name, value }) => `${name} ${value}`}
+              >
+                {tourDistribution.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       {/* Tours per Package */}
