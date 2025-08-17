@@ -48,23 +48,11 @@
 - Shareable via Facebook using `react-share`.
 - Guides’ stories visible on their public profile.
 
-### 📊 Admin Dashboard
-
-- View total:
-  - ✅ Payments (sum of all)
-  - ✅ Tour Guides (count)
-  - ✅ Tourists (count)
-  - ✅ Packages
-  - ✅ Stories
-- Manage:
-  - ✅ All users (search/filter by role)
-  - ✅ Candidate applications
-  - ✅ Add packages
-
 ### 📄 Profile & Dashboard
 
 - All users can update their profile (except email/role).
 - Role-based dashboard views and actions.
+- Every user see their stats in dashboard.
 - Join as Tour Guide button for tourists.
 - Manage guide profile page where tour guides update their guide profile.
 

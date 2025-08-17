@@ -1,9 +1,10 @@
-import { FaCalendarAlt, FaCheckCircle, FaMoneyBillWave, FaBan } from "react-icons/fa";
+import { FaCalendarAlt, FaCheckCircle, FaMoneyBillWave, FaTimesCircle } from "react-icons/fa";
+import { MdCancel } from "react-icons/md";
 import { MdBookmarkAdded } from "react-icons/md";
 
 const TouristStats = ({ stats }) => {
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
       {/* Total Bookings */}
       <div className="bg-blue-100 text-blue-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
         <MdBookmarkAdded size={35} />
@@ -23,7 +24,7 @@ const TouristStats = ({ stats }) => {
       </div>
 
       {/* Completed Tours */}
-      <div className="bg-pink-100 text-pink-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+      <div className="bg-purple-100 text-purple-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
         <FaCheckCircle size={35} />
         <div>
           <p className="text-lg font-bold">{stats.completedTours || 0}</p>
@@ -31,17 +32,26 @@ const TouristStats = ({ stats }) => {
         </div>
       </div>
 
-      {/* Cancelled Bookings */}
-      <div className="bg-red-100 text-red-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
-        <FaBan size={35} />
+      {/* Cancelled Tours */}
+      <div className="bg-gray-100 text-gray-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+        <MdCancel size={35} />
         <div>
-          <p className="text-lg font-bold">{stats.cancelledBookings || 0}</p>
-          <p className="text-sm font-medium">Cancelled Bookings</p>
+          <p className="text-lg font-bold">{stats.cancelledTours || 0}</p>
+          <p className="text-sm font-medium">Cancelled Tours</p>
+        </div>
+      </div>
+
+      {/* Rejected Tours */}
+      <div className="bg-red-100 text-red-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+        <FaTimesCircle size={35} />
+        <div>
+          <p className="text-lg font-bold">{stats.rejectedTours || 0}</p>
+          <p className="text-sm font-medium">Rejected Tours</p>
         </div>
       </div>
 
       {/* Pending Payments */}
-      <div className="bg-purple-100 text-purple-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
+      <div className="bg-orange-100 text-orange-800 rounded-xl p-5 shadow-sm hover:shadow-lg transition-shadow duration-300 flex items-center gap-4">
         <FaMoneyBillWave size={35} />
         <div>
           <p className="text-lg font-bold">{stats.pendingPayments || 0}</p>

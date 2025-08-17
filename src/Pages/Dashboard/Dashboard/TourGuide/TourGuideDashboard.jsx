@@ -46,7 +46,7 @@ const COLORS = ["#00C49F", "#0088FE", "#FF0000"];
       <TourGuideStats stats={stats} />
 
       {/* Tour Distribution */}
-      <div className="bg-white rounded-xl shadow-md p-5">
+      <div className="bg-white rounded-xl shadow-md p-4">
         <h3 className="text-lg font-semibold mb-4">Tour Distribution</h3>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
@@ -73,7 +73,7 @@ const COLORS = ["#00C49F", "#0088FE", "#FF0000"];
       </div>
 
       {/* Tours per Package */}
-      <div className="bg-white rounded-xl shadow-md p-5">
+      <div className="bg-white rounded-xl shadow-md p-4">
         <h3 className="text-lg font-semibold mb-4">Tours per Package</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={toursPerPackage}>
