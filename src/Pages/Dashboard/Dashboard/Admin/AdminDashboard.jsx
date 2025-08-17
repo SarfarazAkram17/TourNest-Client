@@ -55,7 +55,9 @@ const AdminDashboard = () => {
   const COLORS = ["#0088FE", "#FF8042"];
 
   return (
-    <div className="px-4 space-y-10">
+    <div className="px-4 space-y-8">
+      <h1 className="text-center text-3xl sm:text-4xl text-primary font-extrabold">Dashboard</h1>
+
       {/* Stat Cards */}
       <AdminStats stats={stats} />
 
@@ -104,7 +106,7 @@ const AdminDashboard = () => {
       {/* Payment Trend */}
       <div className="bg-white rounded-xl shadow-md p-5">
         <h3 className="text-lg font-semibold mb-4">Payment Trends</h3>
-        <ResponsiveContainer width="100%" height={350}>
+        {paymentTrends.length === 0 ? <p className="font-semibold h-[200px] flex justify-center items-center">No payments yet.</p> :         <ResponsiveContainer width="100%" height={350}>
           <LineChart data={paymentTrends}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
@@ -120,7 +122,8 @@ const AdminDashboard = () => {
               activeDot={{ r: 8 }}
             />
           </LineChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer>}
+
       </div>
     </div>
   );

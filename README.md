@@ -111,8 +111,8 @@
 | `react-tabs`                | ^6.1.0   | Tab components                             |
 | `react-toastify`            | ^11.0.5  | Toast notifications                        |
 | `react-use`                 | ^17.6.0  | to get window size to show confetti        |
+| `recharts`                  | ^3.1.2   | to show stats in chart in dashbaord        |
 | `sweetalert2`               | ^11.22.2 | Confirmation modals                        |
-
 
 ### 👨‍💻 Developer
 

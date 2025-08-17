@@ -19,7 +19,7 @@ const ManageProfile = () => {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-useEffect(() => {
+  useEffect(() => {
     if (user?.photoURL && !preview) {
       setPreview(user.photoURL);
     }

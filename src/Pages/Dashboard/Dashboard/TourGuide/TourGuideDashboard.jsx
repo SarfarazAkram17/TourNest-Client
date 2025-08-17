@@ -38,10 +38,12 @@ const TourGuideDashboard = () => {
 
   const { stats, tourDistribution, toursPerPackage } = dashboardData;
 
-const COLORS = ["#00C49F", "#0088FE", "#FF0000"];
+  const COLORS = ["#00C49F", "#0088FE", "#FF0000"];
 
   return (
-    <div className="px-4 space-y-10">
+    <div className="px-4 space-y-8">
+      <h1 className="text-center text-3xl sm:text-4xl text-primary font-extrabold">Dashboard</h1>
+
       {/* Stat Cards */}
       <TourGuideStats stats={stats} />
 
@@ -56,9 +58,7 @@ const COLORS = ["#00C49F", "#0088FE", "#FF0000"];
               cy="50%"
               outerRadius={100}
               dataKey="value"
-              label={({ name, value }) =>
-                `${name} ${value}`
-              }
+              label={({ name, value }) => `${name} ${value}`}
             >
               {tourDistribution.map((entry, index) => (
                 <Cell

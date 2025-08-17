@@ -216,7 +216,7 @@ const ManageGuideProfile = () => {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="btn btn-outline btn-primary mt-4 flex items-center gap-2"
+              className="btn btn-outline hover:text-white btn-primary mt-4 flex items-center gap-2"
             >
               <FiEdit3 /> Edit Guide Info
             </button>
