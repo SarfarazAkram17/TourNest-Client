@@ -164,7 +164,7 @@ const PackageDetails = () => {
     guideOptions.find((option) => option.value === watchTourGuide) || null;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-7">
+    <div className="max-w-7xl mx-auto px-4 py-7">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-primary mb-3">{pkg.title}</h1>
         <p className="text-gray-600 text-sm md:text-base max-w-3xl mx-auto">

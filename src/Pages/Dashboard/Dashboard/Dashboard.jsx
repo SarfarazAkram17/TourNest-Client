@@ -2,8 +2,8 @@ import Loading from "../../../Components/Loading/Loading";
 import useUserRole from "../../../Hooks/useUserRole";
 import Forbidden from "../../Forbidden/Forbidden";
 import AdminDashboard from "./Admin/AdminDashboard";
-import TourGuideDashboard from "./TourGuideDashboard";
-import TouristDashboard from "./TouristDashboard";
+import TourGuideDashboard from "./TourGuide/TourGuideDashboard";
+import TouristDashboard from "./Tourist/TouristDashboard";
 
 const Dashboard = () => {
   const { role, roleLoading } = useUserRole();

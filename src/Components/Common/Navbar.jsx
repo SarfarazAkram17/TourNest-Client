@@ -74,7 +74,7 @@ const Navbar = () => {
 
   return (
  <div ref={menuRef} className="bg-base-100 py-0 shadow sticky z-50 top-0">
-     <div className="navbar max-w-6xl mx-auto px-4">
+     <div className="navbar max-w-7xl mx-auto px-4">
       <div className="navbar-start">
         <div className="md:hidden mr-2">
           <button onClick={() => setIsOpen(!isOpen)} className="btn btn-ghost">

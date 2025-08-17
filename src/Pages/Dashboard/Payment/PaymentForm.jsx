@@ -6,6 +6,7 @@ import useAuth from "../../../Hooks/useAuth";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import Loading from "../../../Components/Loading/Loading";
 import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 const PaymentForm = () => {
   const stripe = useStripe();
@@ -16,7 +17,6 @@ const PaymentForm = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ["bookings", bookingId],
@@ -36,6 +36,18 @@ const PaymentForm = () => {
     e.preventDefault();
     setLoading(true);
 
+    if (booking.status === "rejected") {
+      return toast.info("Tour guide reject this booking");
+    }
+
+    if (booking.status === "cancelled") {
+      return toast.info("You cancelled this booking");
+    }
+
+    if (booking.payment_status === "paid") {
+      return toast.info("You already pay for this booking");
+    }
+
     if (!stripe || !elements) {
       setError("Stripe is not loaded.");
       setLoading(false);
@@ -48,7 +60,6 @@ const PaymentForm = () => {
       setLoading(false);
       return;
     }
-
 
     const { error: paymentMethodError } = await stripe.createPaymentMethod({
       type: "card",
@@ -63,7 +74,6 @@ const PaymentForm = () => {
 
     setError("");
 
-  
     try {
       const res = await axiosSecure.post(
         `/create-payment-intent?email=${userEmail}`,
@@ -87,7 +97,6 @@ const PaymentForm = () => {
         return;
       }
 
-
       if (result.paymentIntent.status === "succeeded") {
         const transactionId = result.paymentIntent.id;
         const paymentData = {
@@ -98,7 +107,10 @@ const PaymentForm = () => {
           paymentMethod: result.paymentIntent.payment_method_types,
         };
 
-        const paymentRes = await axiosSecure.post(`/payments?email=${userEmail}`, paymentData);
+        const paymentRes = await axiosSecure.post(
+          `/payments?email=${userEmail}`,
+          paymentData
+        );
 
         if (paymentRes.data.insertedId && paymentRes.data.updatedBooking) {
           await Swal.fire({

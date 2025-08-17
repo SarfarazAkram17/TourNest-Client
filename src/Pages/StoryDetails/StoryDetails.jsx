@@ -32,7 +32,7 @@ const StoryDetails = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-7">
+    <div className="max-w-7xl mx-auto px-4 py-7">
       <h2 className="text-3xl font-bold text-primary text-center mb-2">
         {story.title}
       </h2>

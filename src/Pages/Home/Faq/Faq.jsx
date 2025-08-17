@@ -78,7 +78,7 @@ const Faq = () => {
 
   return (
     <div className="py-12 bg-gray-50 mb-7">
-      <div className="px-4 max-w-6xl mx-auto">
+      <div className="px-4 max-w-7xl mx-auto">
         <motion.h1
           className="mb-10 text-center text-primary text-3xl md:text-4xl font-bold"
           initial={{ opacity: 0, y: -40 }}

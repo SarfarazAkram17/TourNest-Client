@@ -42,7 +42,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-base-300 mt-10">
-      <div className="px-4 max-w-6xl mx-auto py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="px-4 max-w-7xl mx-auto py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Logo + Name */}
         <div className="flex flex-col items-center md:items-start">
           <Link to="/">

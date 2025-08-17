@@ -64,7 +64,7 @@ const travelTips = [
 const TravelTips = () => {
   return (
     <div className="bg-gray-50 py-16">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <motion.h2
           className="text-center text-3xl md:text-4xl font-bold text-primary mb-6"
           initial={{ opacity: 0, y: -40 }}

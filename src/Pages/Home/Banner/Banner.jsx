@@ -26,7 +26,7 @@ const slides = [
 const Banner = () => {
   return (
     <Carousel
-      className="max-w-6xl mx-auto px-4 my-8"
+      className="max-w-7xl mx-auto px-4 my-8"
       autoPlay={true}
       infiniteLoop={true}
       showThumbs={false}

@@ -47,7 +47,7 @@ const TourGuideProfile = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 my-7">
+    <div className="max-w-7xl mx-auto px-4 my-7">
       {/* Profile Section */}
       <div className="flex flex-col items-center text-center space-y-4">
         <img

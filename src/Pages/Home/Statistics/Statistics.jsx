@@ -33,7 +33,7 @@ const stats = [
 const Statistics = () => {
   return (
     <section className="py-12 bg-white">
-      <div className="max-w-6xl mx-auto px-4 text-center">
+      <div className="max-w-7xl mx-auto px-4 text-center">
         <motion.h2
           className="text-center text-3xl md:text-4xl font-bold text-primary mb-6"
           initial={{ opacity: 0, y: -40 }}

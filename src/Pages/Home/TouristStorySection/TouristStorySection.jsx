@@ -27,7 +27,7 @@ const TouristStorySection = () => {
 
   return (
     <section className="py-12 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-center text-3xl md:text-4xl font-bold text-primary mb-6">
           Tourist Stories
         </h2>
