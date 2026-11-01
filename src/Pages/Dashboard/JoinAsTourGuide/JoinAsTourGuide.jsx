@@ -1,290 +1,266 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+import { Link } from "react-router";
 import { useForm } from "react-hook-form";
-import Swal from "sweetalert2";
-import Select from "react-select";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { LuClock, LuSend } from "react-icons/lu";
 import useAuth from "../../../Hooks/useAuth";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useLocations from "../../../Hooks/useLocations";
+import useDocumentTitle from "../../../Hooks/useDocumentTitle";
+import PageHeader from "../../../Components/UI/PageHeader";
+import FormField from "../../../Components/UI/FormField";
+import Loading from "../../../Components/Loading/Loading";
+import { showSuccess, getErrorMessage } from "../../../utils/alerts";
+import { formatDate } from "../../../utils/format";
 
 const JoinAsTourGuide = () => {
+  useDocumentTitle("Become a guide");
   const { user, userEmail } = useAuth();
   const axiosSecure = useAxiosSecure();
-  const [loading, setLoading] = useState(false);
-
-  const [regions, setRegions] = useState([]);
-  const [districtMap, setDistrictMap] = useState({});
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const queryClient = useQueryClient();
+  const { regions, districts } = useLocations();
+  const [submitting, setSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
-    reset,
+    watch,
+    setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({ defaultValues: { region: "", district: "" } });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const regionRes = await fetch("/regions.json");
-      const regionData = await regionRes.json();
-      setRegions(regionData);
+  const region = watch("region");
+  const districtOptions = districts[region] || [];
 
-      const districtRes = await fetch("/districts.json");
-      const districtData = await districtRes.json();
-      setDistrictMap(districtData);
-    };
+  const { data: existing, isLoading } = useQuery({
+    queryKey: ["myApplication", userEmail],
+    queryFn: async () => (await axiosSecure.get(`/applications/mine?email=${userEmail}`)).data,
+    enabled: !!userEmail,
+  });
 
-    fetchData();
-  }, []);
-
-  const getDistrictOptions = () => {
-    if (!selectedRegion) return [];
-    return (
-      districtMap[selectedRegion.value]?.map((district) => ({
-        value: district,
-        label: district,
-      })) || []
-    );
-  };
-
-  const handleJoinAsTourGuide = async (data) => {
-    if (!selectedRegion) {
-      toast.error("Please select a Region.");
-      return;
-    }
-    if (!selectedDistrict) {
-      toast.error("Please select a District.");
-      return;
-    }
-
-    setLoading(true);
-
-    const applicationData = {
-      name: user?.displayName || "",
-      email: userEmail,
-      phone: data.phone,
-      applicationTitle: data.applicationTitle,
-      reason: data.reason,
-      cvLink: data.cvLink,
-      region: selectedRegion.value,
-      district: selectedDistrict.value,
-      experience: data.experience,
-      languages: data.languages.split(",").map((lang) => lang.trim()),
-      bio: data.bio,
-      age: parseInt(data.age, 10),
-      photo: user?.photoURL,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-
+  const onSubmit = async (data) => {
+    setSubmitting(true);
     try {
-      const res = await axiosSecure.post(`/applications?email=${userEmail}`, applicationData);
-      if (res.data.insertedId) {
-        reset();
-        setSelectedRegion(null);
-        setSelectedDistrict(null);
+      const res = await axiosSecure.post(`/applications?email=${userEmail}`, {
+        name: user?.displayName || "",
+        email: userEmail,
+        photo: user?.photoURL || "",
+        phone: data.phone.trim(),
+        applicationTitle: data.applicationTitle.trim(),
+        reason: data.reason.trim(),
+        cvLink: data.cvLink.trim(),
+        region: data.region,
+        district: data.district,
+        experience: Number(data.experience),
+        languages: data.languages
+          .split(",")
+          .map((l) => l.trim())
+          .filter(Boolean),
+        bio: data.bio.trim(),
+        age: Number(data.age),
+      });
 
-        Swal.fire({
-          icon: "success",
-          title: "Application Submitted!",
-          text: "Waiting for admin approval.",
-          timer: 2500,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
+      if (res.data.insertedId) {
+        await showSuccess("Application submitted", "An admin will review it soon. You can check the status on this page.");
+        queryClient.invalidateQueries({ queryKey: ["myApplication"] });
       } else {
-        reset();
-        setSelectedRegion(null);
-        setSelectedDistrict(null);
-        toast.warn(res.data.message);
+        toast.info(res.data.message || "You have already applied.");
+        queryClient.invalidateQueries({ queryKey: ["myApplication"] });
       }
-    } catch (err) {
-      toast.error(err.message);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  if (isLoading) return <Loading />;
+
+  if (existing?.application) {
+    const app = existing.application;
+    return (
+      <div>
+        <PageHeader title="Become a guide" />
+        <div className="surface mx-auto max-w-2xl p-6 text-center sm:p-10">
+          <span className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-warning/12 text-warning">
+            <LuClock size={30} aria-hidden="true" />
+          </span>
+          <h2 className="mt-5 text-xl font-bold">Your application is under review</h2>
+          <p className="mt-2 text-muted">
+            You applied on {formatDate(app.createdAt)} as <strong>{app.applicationTitle}</strong>. We'll
+            update your account as soon as an admin decides. There's nothing else you need to do.
+          </p>
+          <Link to="/dashboard" className="btn btn-outline mt-6">
+            Back to dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const field = (name) => ({ "aria-invalid": !!errors[name] });
 
   return (
-    <div className="px-4">
-      <h2 className="text-3xl font-bold mb-6 text-center text-primary">
-        Join as a Tour Guide
-      </h2>
+    <div>
+      <PageHeader
+        title="Become a guide"
+        description="Tell us about yourself. An admin reviews every application before you can host trips."
+      />
 
-      <div className="p-6 shadow-lg bg-white rounded-lg mt-6">
-        <form onSubmit={handleSubmit(handleJoinAsTourGuide)} className="space-y-4" noValidate>
-          {/* Application Title */}
-          <div>
-            <label htmlFor="applicationTitle" className="text-xs text-black/60 font-semibold mb-1 block">Application Title</label>
-            <input
-              id="applicationTitle"
-              type="text"
-              placeholder="Application Title"
-              {...register("applicationTitle", { required: "Application Title is required" })}
-              className={`input input-bordered w-full ${errors.applicationTitle ? "border-red-500" : ""}`}
-            />
-            {errors.applicationTitle && (
-              <p className="text-red-500 text-xs mt-1">{errors.applicationTitle.message}</p>
-            )}
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+        <section className="surface p-5 sm:p-6">
+          <h2 className="text-lg font-bold">About your application</h2>
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <FormField label="Application title" htmlFor="applicationTitle" required error={errors.applicationTitle?.message} className="md:col-span-2">
+              <input
+                id="applicationTitle"
+                className="input w-full"
+                placeholder="e.g. Sundarbans wildlife guide with 6 years of experience"
+                {...field("applicationTitle")}
+                {...register("applicationTitle", { required: "Add a short title." })}
+              />
+            </FormField>
+            <FormField label="Why do you want to be a guide?" htmlFor="reason" required error={errors.reason?.message} className="md:col-span-2">
+              <textarea
+                id="reason"
+                rows={4}
+                className="textarea w-full resize-none"
+                {...field("reason")}
+                {...register("reason", { required: "Tell us your motivation." })}
+              />
+            </FormField>
+            <FormField label="CV link" htmlFor="cvLink" required hint="A public Google Drive, Dropbox or website link." error={errors.cvLink?.message} className="md:col-span-2">
+              <input
+                id="cvLink"
+                type="url"
+                className="input w-full"
+                placeholder="https://"
+                {...field("cvLink")}
+                {...register("cvLink", {
+                  required: "Add a link to your CV.",
+                  pattern: { value: /^https?:\/\/\S+$/i, message: "Enter a full link starting with https://" },
+                })}
+              />
+            </FormField>
           </div>
+        </section>
 
-          {/* Reason */}
-          <div>
-            <label htmlFor="reason" className="text-xs text-black/60 font-semibold mb-1 block">Reason</label>
-            <textarea
-              id="reason"
-              placeholder="Why do you want to be a Tour Guide?"
-              {...register("reason", { required: "Reason is required" })}
-              className={`textarea textarea-bordered resize-none w-full ${errors.reason ? "border-red-500" : ""}`}
-            ></textarea>
-            {errors.reason && (
-              <p className="text-red-500 text-xs mt-1">{errors.reason.message}</p>
-            )}
+        <section className="surface p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Your guide profile</h2>
+          <p className="mt-1 text-sm text-muted">This information appears on your public guide profile once approved.</p>
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <FormField label="Phone" htmlFor="phone" required error={errors.phone?.message}>
+              <input
+                id="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                className="input w-full"
+                placeholder="01XXXXXXXXX"
+                {...field("phone")}
+                {...register("phone", {
+                  required: "Enter a phone number.",
+                  pattern: { value: /^[+\d][\d\s-]{6,17}$/, message: "Enter a valid phone number." },
+                })}
+              />
+            </FormField>
+            <FormField label="Age" htmlFor="age" required error={errors.age?.message}>
+              <input
+                id="age"
+                type="number"
+                inputMode="numeric"
+                className="input w-full"
+                {...field("age")}
+                {...register("age", {
+                  required: "Enter your age.",
+                  validate: (v) => Number(v) >= 18 || "You must be at least 18.",
+                })}
+              />
+            </FormField>
+            <FormField label="Region" htmlFor="region" required error={errors.region?.message}>
+              <select
+                id="region"
+                className="select w-full"
+                {...field("region")}
+                {...register("region", {
+                  required: "Select your region.",
+                  onChange: () => setValue("district", ""),
+                })}
+              >
+                <option value="">Select region</option>
+                {regions.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="District" htmlFor="district" required error={errors.district?.message}>
+              <select
+                id="district"
+                className="select w-full"
+                disabled={!region}
+                {...field("district")}
+                {...register("district", { required: "Select your district." })}
+              >
+                <option value="">{region ? "Select district" : "Choose a region first"}</option>
+                {districtOptions.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Years of experience" htmlFor="experience" required error={errors.experience?.message}>
+              <input
+                id="experience"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                className="input w-full"
+                {...field("experience")}
+                {...register("experience", {
+                  required: "Enter your experience.",
+                  validate: (v) => (Number(v) >= 0 && Number(v) <= 60) || "Enter a number between 0 and 60.",
+                })}
+              />
+            </FormField>
+            <FormField label="Languages" htmlFor="languages" required hint="Separate with commas, e.g. Bangla, English" error={errors.languages?.message}>
+              <input
+                id="languages"
+                className="input w-full"
+                {...field("languages")}
+                {...register("languages", {
+                  required: "List the languages you speak.",
+                  validate: (v) => v.split(",").some((l) => l.trim()) || "List at least one language.",
+                })}
+              />
+            </FormField>
+            <FormField label="Short bio" htmlFor="bio" required error={errors.bio?.message} className="md:col-span-2">
+              <textarea
+                id="bio"
+                rows={4}
+                className="textarea w-full resize-none"
+                {...field("bio")}
+                {...register("bio", { required: "Write a short bio." })}
+              />
+            </FormField>
           </div>
+        </section>
 
-          {/* CV Link */}
-          <div>
-            <label htmlFor="cvLink" className="text-xs text-black/60 font-semibold mb-1 block">CV Link</label>
-            <input
-              id="cvLink"
-              type="url"
-              placeholder="CV Link (Google Drive or other)"
-              {...register("cvLink", { required: "CV Link is required" })}
-              className={`input input-bordered w-full ${errors.cvLink ? "border-red-500" : ""}`}
-            />
-            {errors.cvLink && (
-              <p className="text-red-500 text-xs mt-1">{errors.cvLink.message}</p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="text-xs text-black/60 font-semibold mb-1 block">Phone</label>
-            <input
-              id="phone"
-              type="number"
-              placeholder="Phone Number"
-              {...register("phone", { required: "Phone number is required" })}
-              className={`input input-bordered w-full ${errors.phone ? "border-red-500" : ""}`}
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
-            )}
-          </div>
-
-          {/* Age */}
-          <div>
-            <label htmlFor="age" className="text-xs text-black/60 font-semibold mb-1 block">Age</label>
-            <input
-              id="age"
-              type="number"
-              placeholder="Age (must be at least 18)"
-              {...register("age", {
-                required: "Age is required",
-                valueAsNumber: true,
-                validate: (value) => value >= 18 || "You must be at least 18 years old",
-              })}
-              className={`input input-bordered w-full ${errors.age ? "border-red-500" : ""}`}
-              min={18}
-            />
-            {errors.age && (
-              <p className="text-red-500 text-xs mt-1">{errors.age.message}</p>
-            )}
-          </div>
-
-          {/* Region */}
-          <div>
-            <label className="text-xs text-black/60 font-semibold mb-1 block">Region</label>
-            <Select
-              options={regions.map((r) => ({ value: r, label: r }))}
-              value={selectedRegion}
-              onChange={(value) => {
-                setSelectedRegion(value);
-                setSelectedDistrict(null);
-              }}
-              placeholder="Select Region"
-            />
-          </div>
-
-          {/* District */}
-          <div>
-            <label className="text-xs text-black/60 font-semibold mb-1 block">District</label>
-            <Select
-              options={getDistrictOptions()}
-              value={selectedDistrict}
-              onChange={setSelectedDistrict}
-              placeholder="Select District"
-              isDisabled={!selectedRegion}
-            />
-          </div>
-
-          {/* Experience */}
-          <div>
-            <label htmlFor="experience" className="text-xs text-black/60 font-semibold mb-1 block">Experience</label>
-            <input
-              id="experience"
-              type="number"
-              placeholder="Years of Experience"
-              {...register("experience", {
-                required: "Experience is required",
-                pattern: {
-                  value: /^[0-9]+$/,
-                  message: "Experience must be a valid number",
-                },
-              })}
-              className={`input input-bordered w-full ${errors.experience ? "border-red-500" : ""}`}
-            />
-            {errors.experience && (
-              <p className="text-red-500 text-xs mt-1">{errors.experience.message}</p>
-            )}
-          </div>
-
-          {/* Languages */}
-          <div>
-            <label htmlFor="languages" className="text-xs text-black/60 font-semibold mb-1 block">Languages</label>
-            <input
-              id="languages"
-              type="text"
-              placeholder="Languages (comma-separated)"
-              {...register("languages", {
-                required: "Languages are required",
-                validate: (value) => value.trim() !== "" || "Languages cannot be empty",
-              })}
-              className={`input input-bordered w-full ${errors.languages ? "border-red-500" : ""}`}
-            />
-            {errors.languages && (
-              <p className="text-red-500 text-xs mt-1">{errors.languages.message}</p>
-            )}
-          </div>
-
-          {/* Bio */}
-          <div>
-            <label htmlFor="bio" className="text-xs text-black/60 font-semibold mb-1 block">Bio</label>
-            <textarea
-              id="bio"
-              placeholder="Brief Bio"
-              {...register("bio", { required: "Bio is required" })}
-              className={`textarea textarea-bordered resize-none w-full ${errors.bio ? "border-red-500" : ""}`}
-            ></textarea>
-            {errors.bio && (
-              <p className="text-red-500 text-xs mt-1">{errors.bio.message}</p>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary text-white w-full"
-          >
-            {loading ? (
-              <span className="loading loading-spinner text-primary loading-md"></span>
+        <div className="flex justify-end">
+          <button type="submit" disabled={submitting} className="btn btn-primary btn-lg w-full sm:w-auto">
+            {submitting ? (
+              <span className="loading loading-spinner loading-sm"></span>
             ) : (
-              "Apply as Tour Guide"
+              <>
+                <LuSend size={18} aria-hidden="true" /> Submit application
+              </>
             )}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };

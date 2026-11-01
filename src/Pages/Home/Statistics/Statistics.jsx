@@ -1,69 +1,46 @@
-import {
-  FaUser,
-  FaMapMarkedAlt,
-  FaSuitcaseRolling,
-  FaStar,
-} from "react-icons/fa";
+import { useQuery } from "@tanstack/react-query";
 import CountUp from "react-countup";
-import { motion } from "framer-motion";
+import { LuBookOpenText, LuMap, LuUserRound, LuUsers } from "react-icons/lu";
+import useAxios from "../../../Hooks/useAxios";
 
-const stats = [
-  {
-    label: "Happy Tourists",
-    value: 500,
-    icon: <FaUser className="text-4xl text-blue-500" />,
-  },
-  {
-    label: "Tour Guides",
-    value: 50,
-    icon: <FaMapMarkedAlt className="text-4xl text-green-500" />,
-  },
-  {
-    label: "Tours Completed",
-    value: 120,
-    icon: <FaSuitcaseRolling className="text-4xl text-yellow-500" />,
-  },
-  {
-    label: "5-Star Reviews",
-    value: 300,
-    icon: <FaStar className="text-4xl text-red-500" />,
-  },
+const items = [
+  { key: "packages", label: "Trips to explore", icon: LuMap },
+  { key: "guides", label: "Verified local guides", icon: LuUserRound },
+  { key: "tourists", label: "Travelers on board", icon: LuUsers },
+  { key: "stories", label: "Stories shared", icon: LuBookOpenText },
 ];
 
 const Statistics = () => {
+  const axiosInstance = useAxios();
+  const { data, isError } = useQuery({
+    queryKey: ["public-stats"],
+    queryFn: async () => (await axiosInstance.get("/stats/public")).data,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isError) return null;
+
   return (
-    <section className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 text-center">
-        <motion.h2
-          className="text-center text-3xl md:text-4xl font-bold text-primary mb-6"
-          initial={{ opacity: 0, y: -40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.7 }}
-        >
-          Our Achievements
-        </motion.h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              className="rounded-xl border-2 flex flex-col items-center justify-center border-gray-200 hover:border-secondary hover:shadow-lg transition-border transition-shadow duration-300 p-4 bg-white"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false }}
-              transition={{ duration: 0.3, delay: index * 0.2 }}
-            >
-              <div>{stat.icon}</div>
-              <h3 className="text-2xl font-bold mt-4">
-                <CountUp end={stat.value} duration={2} separator="," />+
-              </h3>
-
-              <p className="text-gray-700 mt-2">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+    <section aria-label="TourNest in numbers" className="container-page pt-14 md:pt-16">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
+        {items.map(({ key, label, icon: Icon }) => (
+          <div key={key} className="flex items-center gap-3 sm:gap-4">
+            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">
+              <Icon size={22} aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <dd className="font-display text-2xl font-bold leading-none tabular-nums sm:text-3xl">
+                {data ? (
+                  <CountUp end={data[key] || 0} duration={1.4} separator="," enableScrollSpy scrollSpyOnce />
+                ) : (
+                  <span className="skeleton inline-block h-7 w-14 align-middle"></span>
+                )}
+              </dd>
+              <dt className="mt-1 text-sm text-muted">{label}</dt>
+            </div>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 };

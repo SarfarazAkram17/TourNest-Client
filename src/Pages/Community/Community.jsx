@@ -1,101 +1,101 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { LuBookOpenText, LuPenLine } from "react-icons/lu";
 import useAxios from "../../Hooks/useAxios";
-import Loading from "../../Components/Loading/Loading";
+import useAuth from "../../Hooks/useAuth";
+import useDebounce from "../../Hooks/useDebounce";
+import useDocumentTitle from "../../Hooks/useDocumentTitle";
 import StoryCard from "../../Components/Shared/StoryCard";
-import {
-  MdKeyboardDoubleArrowRight,
-  MdOutlineKeyboardDoubleArrowLeft,
-} from "react-icons/md";
+import SearchInput from "../../Components/UI/SearchInput";
+import Pagination from "../../Components/UI/Pagination";
+import EmptyState from "../../Components/UI/EmptyState";
+import { CardGridSkeleton } from "../../Components/UI/Skeletons";
 
 const Community = () => {
+  useDocumentTitle("Community stories");
   const axiosInstance = useAxios();
-
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebounce(searchInput.trim(), 350);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["community-stories", page],
-    queryFn: async () => {
-      const res = await axiosInstance.get("/stories", {
-        params: { page },
-      });
-      return res.data;
-    },
-    keepPreviousData: true,
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["community-stories", page, search],
+    queryFn: async () => (await axiosInstance.get("/stories", { params: { page, search } })).data,
+    placeholderData: keepPreviousData,
   });
 
   const stories = data?.stories || [];
-  const total = data?.total || 0;
-  const totalPages = Math.ceil(total / data?.limit);
-
-  const handlePageChange = (newPage) => setPage(newPage);
-
-  if (isLoading) return <Loading />;
+  const totalPages = Math.ceil((data?.total || 0) / (data?.limit || 12));
 
   return (
-    <div className="max-w-7xl mx-auto py-7 px-4">
-      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center text-primary">
-        Travel Stories From Our Community
-      </h2>
-      <p className="text-center text-gray-600 max-w-2xl mx-auto mb-6 text-sm md:text-base">
-        Discover the experiences shared by fellow tourists, tour guides and
-        admin. From hidden gems to unforgettable adventures, these stories bring
-        Bangladesh's beauty to life.
-      </p>
+    <>
+      <section className="border-b border-base-content/10 bg-base-200">
+        <div className="container-page flex flex-col gap-6 py-10 md:flex-row md:items-end md:justify-between md:py-14">
+          <div className="max-w-2xl">
+            <h1 className="h-section">Stories from our community</h1>
+            <p className="mt-3 text-muted sm:text-lg">
+              Hidden gems and unforgettable days, written by travelers and guides across
+              Bangladesh.
+            </p>
+          </div>
+          <Link
+            to={user ? "/dashboard/addStories" : "/login"}
+            state={user ? undefined : "/dashboard/addStories"}
+            className="btn btn-primary self-start md:self-auto"
+          >
+            <LuPenLine size={18} aria-hidden="true" /> Share your story
+          </Link>
+        </div>
+      </section>
 
-      {stories.length === 0 ? (
-        <p className="text-center text-lg sm:text-xl text-gray-700">
-          No stories have been shared yet.
-        </p>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="container-page py-10 md:py-14">
+        <div className="mb-8 max-w-md">
+          <SearchInput
+            value={searchInput}
+            onChange={(v) => {
+              setSearchInput(v);
+              setPage(1);
+            }}
+            placeholder="Search stories by title or place"
+          />
+        </div>
+
+        {isLoading ? (
+          <CardGridSkeleton count={6} />
+        ) : stories.length === 0 ? (
+          <EmptyState
+            icon={LuBookOpenText}
+            title={search ? "No stories match your search" : "No stories yet"}
+            description={
+              search
+                ? "Try a different keyword."
+                : "Be the first to share a story from your travels."
+            }
+          />
+        ) : (
+          <div
+            className={`grid grid-cols-1 gap-6 transition-opacity sm:grid-cols-2 lg:grid-cols-3 ${
+              isFetching ? "opacity-60" : ""
+            }`}
+          >
             {stories.map((story) => (
               <StoryCard key={story._id} story={story} />
             ))}
           </div>
+        )}
 
-          {/* Pagination */}
-          <div className="flex justify-center mt-6 gap-2 flex-wrap">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className={`btn btn-sm ${
-                page === 1
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdOutlineKeyboardDoubleArrowLeft size={20} />
-            </button>
-
-            {[...Array(totalPages).keys()].map((n) => (
-              <button
-                key={n}
-                onClick={() => handlePageChange(n + 1)}
-                className={`btn btn-sm ${
-                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
-                }`}
-              >
-                {n + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages || totalPages === 0}
-              className={`btn btn-sm ${
-                page === totalPages || totalPages === 0
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdKeyboardDoubleArrowRight size={20} />
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={(p) => {
+            setPage(p);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      </section>
+    </>
   );
 };
 

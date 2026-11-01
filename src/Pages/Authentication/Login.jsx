@@ -1,166 +1,128 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import useAxios from "../../Hooks/useAxios";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 import useAuth from "../../Hooks/useAuth";
+import useDocumentTitle from "../../Hooks/useDocumentTitle";
 import SocialLogin from "../../Components/Common/SocialLogin";
+import FormField from "../../Components/UI/FormField";
+import { getAuthErrorMessage } from "../../utils/authErrors";
+import AuthShell from "./AuthShell";
 
 const Login = () => {
-  const axiosInstance = useAxios();
+  useDocumentTitle("Log in");
+  const { loginUser, forgotPassword, startSession } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const { loginUser, forgotPassword, setToken, setTokenLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const redirectTo = typeof location.state === "string" ? location.state : "/dashboard";
 
   const {
     register,
     handleSubmit,
-    reset,
-    watch,
+    getValues,
     formState: { errors },
   } = useForm();
 
-  const email = watch("email")?.trim() || "";
-
-  const saveTokenWithExpiry = (token) => {
-    const tokenObj = {
-      value: token,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem("token", JSON.stringify(tokenObj));
-    setToken(token);
-    setTokenLoading(false)
-  };
-
-  const handleLogin = (formData) => {
+  const handleLogin = async ({ email, password }) => {
     setLoading(true);
-
-    const email = formData.email.trim();
-    const password = formData.password.trim();
-
-    loginUser(email, password)
-      .then(async () => {
-        toast.success("You logged in successfully");
-        reset();
-
-        await axiosInstance.post("/users", { email });
-
-        const jwtRes = await axiosInstance.post("/jwt", { email });
-        if (jwtRes.data.token) {
-          saveTokenWithExpiry(jwtRes.data.token);
-        }
-
-        navigate(location.state || "/");
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const cred = await loginUser(email.trim(), password);
+      await startSession(cred.user);
+      toast.success("Welcome back!");
+      navigate(redirectTo, { replace: true });
+    } catch (error) {
+      toast.error(getAuthErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = async () => {
+    const email = getValues("email")?.trim();
     if (!email) {
-      return toast.warn("Please enter your email first.");
+      toast.warn("Enter your email above first, then press “Forgot password”.");
+      return;
     }
-
-    forgotPassword(email)
-      .then(() => {
-        toast.success("Password reset email send.");
-        toast.warn("Also check email in the spam section");
-      })
-      .catch((err) => {
-        toast.error(`Error in password change: ${err.message}`);
-      });
+    try {
+      await forgotPassword(email);
+      toast.success("Password reset email sent. Check your spam folder too.");
+    } catch (error) {
+      toast.error(getAuthErrorMessage(error));
+    }
   };
 
   return (
-    <div className="px-4">
-      <div className="card w-full shadow-xl max-w-md mx-auto my-12">
-        <div className="card-body">
-          <h1 className="text-3xl font-extrabold">Welcome Back</h1>
-          <p className="mb-4 text-sm font-semibold">Login with TourNest</p>
-          <form onSubmit={handleSubmit(handleLogin)} className="fieldset">
-            <label className="label font-semibold">Email</label>
-            <input
-              type="email"
-              {...register("email", { required: true })}
-              className="input placeholder:text-[13px] placeholder:font-bold w-full"
-              placeholder="Enter your email"
-            />
-            {errors.email?.type === "required" && (
-              <p className="text-red-500 font-bold">Email is required.</p>
-            )}
-
-            <label className="label font-semibold mt-4">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="input placeholder:text-[13px] placeholder:font-bold w-full"
-                {...register("password", {
-                  required: true,
-                })}
-                placeholder="Enter your password"
-              />
-              {errors.password?.type === "required" && (
-                <p className="text-red-500 font-bold">Password is required.</p>
-              )}
-              {showPassword ? (
-                <FaEyeSlash
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-3 right-3 cursor-pointer z-10"
-                  size={17}
-                />
-              ) : (
-                <FaEye
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-3 right-3 cursor-pointer z-10"
-                  size={17}
-                />
-              )}
-            </div>
-            <div>
-              <a
-                onClick={handleForgotPassword}
-                className="link link-hover text-gray-600 font-semibold"
-              >
-                Forgot password?
-              </a>
-            </div>
-            <button
-              disabled={loading}
-              className="btn btn-primary text-white mt-6"
-            >
-              {" "}
-              {loading ? (
-                <span className="loading loading-spinner text-primary loading-md"></span>
-              ) : (
-                "Login"
-              )}
-            </button>
-            <p className="text-xs my-2">
-              Don't have any account ?{" "}
-              <Link
-                state={location.state}
-                to="/register"
-                className="hover:underline text-primary font-semibold"
-              >
-                Register
-              </Link>
-            </p>
-          </form>
-          <div className="divider my-4">Or continue with</div>
-          <SocialLogin
+    <AuthShell
+      title="Welcome back"
+      subtitle="Log in to manage your trips, bookings and stories."
+      footer={
+        <>
+          New to TourNest?{" "}
+          <Link
+            to="/register"
             state={location.state}
-            message={"You login successfully"}
-          ></SocialLogin>
-        </div>
-      </div>
-    </div>
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(handleLogin)} className="space-y-5" noValidate>
+        <FormField label="Email" htmlFor="email" error={errors.email?.message}>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={!!errors.email}
+            className="input w-full"
+            {...register("email", {
+              required: "Enter your email address.",
+              pattern: { value: /^\S+@\S+\.\S+$/, message: "Enter a valid email address." },
+            })}
+          />
+        </FormField>
+
+        <FormField label="Password" htmlFor="password" error={errors.password?.message}>
+          <label className="input w-full items-center gap-2" aria-invalid={!!errors.password}>
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="Your password"
+              className="min-w-0 grow"
+              {...register("password", { required: "Enter your password." })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="text-muted hover:text-base-content"
+            >
+              {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+            </button>
+          </label>
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="self-start text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Forgot password?
+          </button>
+        </FormField>
+
+        <button type="submit" disabled={loading} className="btn btn-primary w-full">
+          {loading ? <span className="loading loading-spinner loading-sm"></span> : "Log in"}
+        </button>
+      </form>
+
+      <div className="divider my-6 text-xs text-muted">or</div>
+      <SocialLogin state={location.state} message="Signed in with Google." />
+    </AuthShell>
   );
 };
 

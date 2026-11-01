@@ -1,11 +1,9 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: "https://tour-nest.vercel.app",
-});
+export const API_BASE_URL = import.meta.env.VITE_api_url;
 
-const useAxios = () => {
-  return axiosInstance;
-};
+export const axiosPublic = axios.create({ baseURL: API_BASE_URL });
+
+const useAxios = () => axiosPublic;
 
 export default useAxios;

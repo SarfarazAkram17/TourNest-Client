@@ -1,77 +1,72 @@
 import { Link, useNavigate } from "react-router";
 import { FacebookShareButton, FacebookIcon } from "react-share";
-import useAuth from "../../Hooks/useAuth";
 import { toast } from "react-toastify";
+import { LuMapPin } from "react-icons/lu";
+import useAuth from "../../Hooks/useAuth";
+import Avatar from "../UI/Avatar";
 
 const StoryCard = ({ story }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const shareUrl = `https://tournest-sarfaraz-akram.netlify.app/stories/${story._id}`;
-  const quote = `Sarfaraz Akram shared a link.\n\n💬 Check out this amazing travel story: ${story.title}\n\n🌐 see the story: ${shareUrl}`;
+  const shareUrl = `${window.location.origin}/stories/${story._id}`;
+  const quote = `Read this travel story on TourNest: ${story.title}`;
 
   const handleLoginRedirect = () => {
-    navigate("/login");
-    toast.info("Please login to share this story!");
+    toast.info("Log in to share this story.");
+    navigate("/login", { state: `/stories/${story._id}` });
   };
 
   return (
-    <div className="border border-black/50 rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-500 flex flex-col">
-      {/* Cover Image */}
-      <img
-        src={story.images[0]}
-        alt={story.title}
-        className="h-48 w-full object-cover"
-      />
+    <article className="group surface-flat relative flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lift">
+      <div className="relative aspect-[16/10] overflow-hidden bg-base-200">
+        <img
+          src={story.images?.[0]}
+          alt={story.title}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        {story.location && (
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-base-100/90 px-3 py-1 text-xs font-semibold backdrop-blur">
+            <LuMapPin size={12} aria-hidden="true" /> {story.location}
+          </span>
+        )}
+      </div>
 
-      {/* Story Content */}
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-xl font-semibold text-primary">{story.title}</h3>
-
-        <p className="text-sm text-gray-500 mt-1 mb-3 line-clamp-2">
-          {story.description}
-        </p>
-
-        <div className="flex items-center gap-3 mb-4">
-          <img
-            src={story.photo}
-            alt={story.name}
-            className="w-12 h-12 rounded-full object-cover"
-          />
-          <div className="flex flex-col gap-1 justify-center">
-            <span className="text-sm capitalize">
-              <strong>Name:</strong> {story.name}
-            </span>
-            <span className="text-sm capitalize">
-              <strong>Role:</strong> {story.role}
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom action bar */}
-        <div className="mt-auto flex justify-between items-center">
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="line-clamp-2 text-lg font-bold leading-snug">
           <Link
             to={`/stories/${story._id}`}
-            className="text-primary font-medium hover:underline text-sm"
+            className="after:absolute after:inset-0 after:content-['']"
           >
-            Read Full Story
+            {story.title}
           </Link>
+        </h3>
+        <p className="mt-2 line-clamp-3 text-sm text-muted">{story.description}</p>
 
-          {user ? (
-            <FacebookShareButton
-              url={shareUrl}
-              quote={quote}
-            >
-              <FacebookIcon size={28} round />
-            </FacebookShareButton>
-          ) : (
-            <button onClick={handleLoginRedirect}>
-              <FacebookIcon size={32} round />
-            </button>
-          )}
+        <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <Avatar src={story.photo} name={story.name} size="sm" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold capitalize">{story.name}</p>
+              <p className="truncate text-xs capitalize text-muted">{story.role}</p>
+            </div>
+          </div>
+
+          <div className="relative z-10 shrink-0">
+            {user ? (
+              <FacebookShareButton url={shareUrl} quote={quote} aria-label="Share on Facebook">
+                <FacebookIcon size={32} round />
+              </FacebookShareButton>
+            ) : (
+              <button type="button" onClick={handleLoginRedirect} aria-label="Log in to share">
+                <FacebookIcon size={32} round />
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

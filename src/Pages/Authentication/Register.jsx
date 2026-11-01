@@ -1,32 +1,33 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { Link, useLocation, useNavigate } from "react-router";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import userImage from "../../assets/image-upload-icon.png";
-import axios from "axios";
+import { LuCamera, LuEye, LuEyeOff } from "react-icons/lu";
 import useAuth from "../../Hooks/useAuth";
-import useAxios from "../../Hooks/useAxios";
+import useDocumentTitle from "../../Hooks/useDocumentTitle";
 import SocialLogin from "../../Components/Common/SocialLogin";
+import FormField from "../../Components/UI/FormField";
+import { uploadImage } from "../../utils/cloudinary";
+import { getAuthErrorMessage } from "../../utils/authErrors";
+import AuthShell from "./AuthShell";
 
 const Register = () => {
-  const axiosInstance = useAxios();
-  const { createUser, updateUserProfile, setToken, setTokenLoading } =
-    useAuth();
+  useDocumentTitle("Create account");
+  const { createUser, updateUserProfile, startSession } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const redirectTo = typeof location.state === "string" ? location.state : "/dashboard";
 
   const [showPassword, setShowPassword] = useState(false);
   const [preview, setPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [photoError, setPhotoError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    clearErrors,
-    reset,
   } = useForm();
 
   useEffect(() => {
@@ -37,219 +38,158 @@ const Register = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
-      clearErrors("photo");
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Choose an image file.");
+      return;
     }
+    setPhotoError("");
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file));
   };
 
-  const saveTokenWithExpiry = (token) => {
-    const tokenObj = {
-      value: token,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem("token", JSON.stringify(tokenObj));
-    setToken(token);
-    setTokenLoading(false);
-  };
+  const handleRegister = async ({ name, email, password }) => {
+    if (!selectedFile) {
+      setPhotoError("Add a profile photo so guides and travelers can recognise you.");
+      return;
+    }
 
-  const handleRegister = async (data) => {
     setLoading(true);
-    const { name, email, password } = data;
-
-    // Upload image to Cloudinary
-    const imageData = new FormData();
-    imageData.append("file", selectedFile);
-    imageData.append(
-      "upload_preset",
-      import.meta.env.VITE_cloudinary_preset_name
-    );
-
     try {
-      const imageRes = await axios.post(
-        `https://api.cloudinary.com/v1_1/${
-          import.meta.env.VITE_cloudinary_cloud_name
-        }/image/upload`,
-        imageData
-      );
-
-      const imageUrl = imageRes.data.secure_url;
-
-      // Register user
-      await createUser(email, password);
-
-      const userProfile = {
-        displayName: name.trim(),
-        photoURL: imageUrl,
-      };
-
-      await updateUserProfile(userProfile);
-
-      const userInfo = {
-        email,
-        name,
-        role: "tourist",
-        createdAt: new Date().toISOString(),
-        last_log_in: new Date().toISOString(),
-      };
-
-      await axiosInstance.post("/users", userInfo);
-
-      const jwtRes = await axiosInstance.post("/jwt", { email });
-      if (jwtRes.data.token) {
-        saveTokenWithExpiry(jwtRes.data.token);
-      }
-
-      toast.success("Registered successfully");
-      navigate(location.state || "/");
-      reset();
-    } catch (err) {
-      toast.error(err.message || "Registration failed");
+      const photoURL = await uploadImage(selectedFile);
+      const cred = await createUser(email.trim(), password);
+      await updateUserProfile({ displayName: name.trim(), photoURL });
+      await startSession(cred.user, { name: name.trim(), photo: photoURL });
+      toast.success("Account created. Welcome to TourNest!");
+      navigate(redirectTo, { replace: true });
+    } catch (error) {
+      toast.error(getAuthErrorMessage(error));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="px-4">
-      <div className="card w-full shadow-xl max-w-md mx-auto my-10">
-        <div className="card-body">
-          <h1 className="text-3xl font-extrabold">Create Your Account</h1>
-          <p className="mb-4 text-sm font-semibold">Join TourNest today</p>
-
-          <form onSubmit={handleSubmit(handleRegister)}>
-            <label htmlFor="profileImage" className="cursor-pointer">
-              <img
-                src={preview || userImage}
-                alt="Upload"
-                className="w-13 h-13 object-cover rounded-full border-2 p-0.5 border-primary"
-              />
-            </label>
-            <input
-              type="file"
-              id="profileImage"
-              accept="image/*"
-              {...register("photo", { required: true })}
-              onChange={handleImageChange}
-              className="hidden"
-            />
-            {errors.photo && (
-              <p className="text-red-500 font-semibold text-xs mt-1">
-                Profile image is required.
-              </p>
-            )}
-
-            <label className="label font-semibold mt-4 mb-2 text-xs">
-              Name
-            </label>
-            <input
-              type="text"
-              {...register("name", { required: true, minLength: 6 })}
-              className="input placeholder:text-[13px] placeholder:font-bold w-full"
-              placeholder="Enter your name"
-            />
-            {errors.name && (
-              <p className="text-red-500 font-semibold text-xs mt-1">
-                {errors.name.type === "required"
-                  ? "Name is required."
-                  : "Name must be at least 6 characters."}
-              </p>
-            )}
-
-            <label className="label font-semibold mt-4 mb-2 text-xs">
-              Email
-            </label>
-            <input
-              type="email"
-              {...register("email", { required: true })}
-              className="input placeholder:text-[13px] placeholder:font-bold w-full"
-              placeholder="Enter your email"
-            />
-            {errors.email && (
-              <p className="text-red-500 font-semibold text-xs mt-1">
-                Email is required.
-              </p>
-            )}
-
-            <label className="label font-semibold mt-4 mb-2 text-xs">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="input placeholder:text-[13px] placeholder:font-bold w-full"
-                placeholder="Enter your password"
-                {...register("password", {
-                  required: true,
-                  minLength: 6,
-                  validate: {
-                    hasUppercase: (value) =>
-                      /[A-Z]/.test(value) ||
-                      "Must include at least one uppercase letter",
-                    hasLowercase: (value) =>
-                      /[a-z]/.test(value) ||
-                      "Must include at least one lowercase letter",
-                    hasNumber: (value) =>
-                      /\d/.test(value) || "Must include at least one number",
-                  },
-                })}
-              />
-              {showPassword ? (
-                <FaEyeSlash
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-3 right-3 cursor-pointer z-10"
-                  size={17}
-                />
-              ) : (
-                <FaEye
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-3 right-3 cursor-pointer z-10"
-                  size={17}
-                />
-              )}
-            </div>
-            {errors.password && (
-              <div className="text-red-500 text-xs font-bold mt-1">
-                {errors.password.message ||
-                  (errors.password.type === "minLength"
-                    ? "Password must be at least 6 characters."
-                    : "Password is required.")}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary w-full text-white mt-6"
-            >
-              {loading ? (
-                <span className="loading loading-spinner text-primary loading-md"></span>
-              ) : (
-                "Register"
-              )}
-            </button>
-
-            <p className="text-xs my-2">
-              Already have an account?{" "}
-              <Link
-                state={location.state}
-                to="/login"
-                className="hover:underline text-primary font-semibold"
-              >
-                Login
-              </Link>
-            </p>
-          </form>
-
-          <div className="divider my-4">Or continue with</div>
-          <SocialLogin
-            message="You registered successful"
+    <AuthShell
+      title="Create your account"
+      subtitle="Book trips, meet local guides and share your own stories."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link
+            to="/login"
             state={location.state}
-          />
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(handleRegister)} className="space-y-5" noValidate>
+        <div className="flex items-center gap-4">
+          <label
+            htmlFor="profileImage"
+            className="group relative cursor-pointer rounded-full focus-within:outline-2 focus-within:outline-primary"
+          >
+            {preview ? (
+              <img src={preview} alt="Selected profile" className="h-20 w-20 rounded-full object-cover" />
+            ) : (
+              <span className="inline-flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-base-content/25 text-muted">
+                <LuCamera size={26} aria-hidden="true" />
+              </span>
+            )}
+            <input
+              id="profileImage"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleImageChange}
+            />
+          </label>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">Profile photo</p>
+            <p className="text-xs text-muted">Tap the circle to upload. JPG or PNG, up to 10 MB.</p>
+            {photoError && (
+              <p role="alert" className="mt-1 text-xs font-medium text-error">
+                {photoError}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+
+        <FormField label="Full name" htmlFor="name" error={errors.name?.message}>
+          <input
+            id="name"
+            type="text"
+            autoComplete="name"
+            placeholder="Your name"
+            aria-invalid={!!errors.name}
+            className="input w-full"
+            {...register("name", {
+              required: "Enter your name.",
+              minLength: { value: 3, message: "Name must be at least 3 characters." },
+            })}
+          />
+        </FormField>
+
+        <FormField label="Email" htmlFor="email" error={errors.email?.message}>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={!!errors.email}
+            className="input w-full"
+            {...register("email", {
+              required: "Enter your email address.",
+              pattern: { value: /^\S+@\S+\.\S+$/, message: "Enter a valid email address." },
+            })}
+          />
+        </FormField>
+
+        <FormField
+          label="Password"
+          htmlFor="password"
+          hint="At least 6 characters with an uppercase letter, a lowercase letter and a number."
+          error={errors.password?.message}
+        >
+          <label className="input w-full items-center gap-2" aria-invalid={!!errors.password}>
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              placeholder="Create a password"
+              className="min-w-0 grow"
+              {...register("password", {
+                required: "Create a password.",
+                minLength: { value: 6, message: "Password must be at least 6 characters." },
+                validate: {
+                  upper: (v) => /[A-Z]/.test(v) || "Add at least one uppercase letter.",
+                  lower: (v) => /[a-z]/.test(v) || "Add at least one lowercase letter.",
+                  number: (v) => /\d/.test(v) || "Add at least one number.",
+                },
+              })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="text-muted hover:text-base-content"
+            >
+              {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+            </button>
+          </label>
+        </FormField>
+
+        <button type="submit" disabled={loading} className="btn btn-primary w-full">
+          {loading ? <span className="loading loading-spinner loading-sm"></span> : "Create account"}
+        </button>
+      </form>
+
+      <div className="divider my-6 text-xs text-muted">or</div>
+      <SocialLogin state={location.state} message="Account ready. Welcome to TourNest!" />
+    </AuthShell>
   );
 };
 

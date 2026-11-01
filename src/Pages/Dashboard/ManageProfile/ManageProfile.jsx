@@ -1,255 +1,182 @@
-import { useState, useEffect } from "react";
-import { FiEdit3, FiX } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { toast } from "react-toastify";
-import axios from "axios";
+import { LuCalendarDays, LuMail, LuPencil, LuShield } from "react-icons/lu";
 import useAuth from "../../../Hooks/useAuth";
 import useUserRole from "../../../Hooks/useUserRole";
-import { Link } from "react-router";
+import useDocumentTitle from "../../../Hooks/useDocumentTitle";
+import PageHeader from "../../../Components/UI/PageHeader";
+import Avatar from "../../../Components/UI/Avatar";
+import Modal from "../../../Components/UI/Modal";
+import FormField from "../../../Components/UI/FormField";
+import { RoleBadge } from "../../../Components/UI/StatusBadge";
+import { uploadImage } from "../../../utils/cloudinary";
+import { formatDate } from "../../../utils/format";
 
 const ManageProfile = () => {
+  useDocumentTitle("My profile");
   const { user, userEmail, updateUserProfile } = useAuth();
   const { role, roleLoading } = useUserRole();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.displayName || "",
-  });
-
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (user?.photoURL && !preview) {
-      setPreview(user.photoURL);
-    }
-  }, [user?.photoURL, preview]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     return () => {
-      if (preview && preview.startsWith("blob:")) {
-        URL.revokeObjectURL(preview);
-      }
+      if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
     };
   }, [preview]);
 
-  const handleEditClick = () => {
-    setFormData({ name: user?.displayName || "" });
+  const openEditor = () => {
+    setName(user?.displayName || "");
     setPreview(user?.photoURL || null);
-    setSelectedFile(null);
-    setIsModalOpen(true);
+    setFile(null);
+    setOpen(true);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
+  const handleFile = (e) => {
+    const picked = e.target.files?.[0];
+    if (!picked) return;
+    if (!picked.type.startsWith("image/")) {
+      toast.error("Choose an image file.");
+      return;
     }
+    setFile(picked);
+    setPreview(URL.createObjectURL(picked));
   };
 
-  const handleUpdate = async () => {
-    const trimmedName = formData.name.trim();
+  const trimmed = name.trim();
+  const unchanged = trimmed === (user?.displayName || "") && !file;
 
-    if (!trimmedName) {
-      toast.error("Name cannot be empty");
-      return;
-    }
-
-    if (!preview) {
-      toast.error("Please select a profile image");
-      return;
-    }
-
-    setLoading(true);
-
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!trimmed) return;
+    setSaving(true);
     try {
-      let imageUrl = user.photoURL;
-      let nameToUpdate = user.displayName;
-
-      // Upload new image to Cloudinary if changed
-      if (selectedFile) {
-        const imageData = new FormData();
-        imageData.append("file", selectedFile);
-        imageData.append(
-          "upload_preset",
-          import.meta.env.VITE_cloudinary_preset_name
-        );
-
-        const res = await axios.post(
-          `https://api.cloudinary.com/v1_1/${
-            import.meta.env.VITE_cloudinary_cloud_name
-          }/image/upload`,
-          imageData
-        );
-
-        imageUrl = res.data.secure_url;
-      }
-
-      if (trimmedName !== user.displayName) {
-        nameToUpdate = trimmedName;
-      }
-
-      await updateUserProfile({
-        displayName: nameToUpdate,
-        photoURL: imageUrl,
-      });
-
-      toast.success("Profile updated successfully!");
-      setIsModalOpen(false);
+      const photoURL = file ? await uploadImage(file) : user.photoURL;
+      await updateUserProfile({ displayName: trimmed, photoURL });
+      toast.success("Profile updated.");
+      setOpen(false);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "We couldn't update your profile.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const isSaveDisabled =
-    formData.name.trim() === user?.displayName && preview === user?.photoURL;
+  const joined = user?.metadata?.creationTime;
+  const lastSignIn = user?.metadata?.lastSignInTime;
 
   return (
-    <div className="px-4">
-      <h2 className="text-3xl font-bold mb-8 text-primary">
-        Welcome back, {user?.displayName} 👋
-      </h2>
+    <div>
+      <PageHeader title="My profile" description="How you appear to guides, travelers and the community." />
 
-      <div className="shadow-lg p-6 bg-white rounded-lg">
-        <div className="flex flex-col md:flex-row gap-8 md:items-center">
-          <img
-            src={user?.photoURL}
-            alt="Profile"
-            className="w-44 h-44 rounded-full object-cover border-4 border-primary shadow"
-          />
-          <div className="flex-1 space-y-3">
-            <p>
-              <span className="font-semibold">Name:</span> {user?.displayName}
-            </p>
-            <p>
-              <span className="font-semibold">Email:</span> {userEmail}
-            </p>
-            <p>
-              <span className="font-semibold">Role:</span>{" "}
-              <span className="capitalize">{!roleLoading && role}</span>
-            </p>
-            <button
-              onClick={handleEditClick}
-              className="btn btn-outline btn-primary hover:text-white mt-4 flex items-center gap-2"
-            >
-              <FiEdit3 />
-              Edit Profile
+      <div className="surface overflow-hidden">
+        <div className="h-28 bg-linear-to-r from-secondary/80 via-secondary/50 to-primary/70 sm:h-36" aria-hidden="true" />
+        <div className="px-5 pb-6 sm:px-8 sm:pb-8">
+          <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
+            <Avatar src={user?.photoURL} name={user?.displayName} size="xl" className="ring-4 ring-base-100" />
+            <button type="button" onClick={openEditor} className="btn btn-primary self-start sm:self-auto">
+              <LuPencil size={16} aria-hidden="true" /> Edit profile
             </button>
           </div>
-        </div>
-        {!roleLoading && role === "tourist" && (
-          <div className="mt-10">
-            <Link to="/dashboard/joinAsTourGuide">
-              <button className="text-white btn btn-sm btn-primary">
-                Apply For Tour Guide
-              </button>
-            </Link>{" "}
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <h2 className="font-display text-2xl font-bold tracking-tight">{user?.displayName}</h2>
+            {!roleLoading && role !== "user" && <RoleBadge role={role} />}
           </div>
-        )}
-        {isModalOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-40 backdrop-blur-md"
-              onClick={() => !loading && setIsModalOpen(false)}
-            ></div>
 
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white border rounded-lg max-w-md w-full p-8 relative shadow-xl">
-                <button
-                  onClick={() => !loading && setIsModalOpen(false)}
-                  className="absolute top-4 right-4 hover:text-red-500 cursor-pointer text-gray-500 transition"
-                  aria-label="Close modal"
-                  disabled={loading}
-                >
-                  <FiX size={26} />
-                </button>
-
-                <h3 className="text-2xl font-semibold mb-6 text-center">
-                  Edit Profile
-                </h3>
-
-                <div className="flex flex-col items-start mb-4">
-                  <label
-                    htmlFor="profileImage"
-                    className="cursor-pointer block w-32 h-32 rounded-full border-2 border-primary overflow-hidden mb-2"
-                  >
-                    <img
-                      src={preview}
-                      alt="Profile Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </label>
-
-                  <button
-                    onClick={() =>
-                      document.getElementById("profileImage").click()
-                    }
-                    className="btn bg-transparent text-primary border-2 border-primary hover:bg-primary hover:text-white"
-                  >
-                    Change Profile Photo
-                  </button>
-                  <input
-                    type="file"
-                    id="profileImage"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                  {!preview && (
-                    <p className="text-red-500 text-center font-semibold mb-4">
-                      Profile image is required.
-                    </p>
-                  )}
-                </div>
-
-                <label className="label font-semibold mt-4 mb-2">Name</label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                />
-                {!formData.name.trim() && (
-                  <p className="text-red-500 text-sm font-semibold mt-2">
-                    Name is required.
-                  </p>
-                )}
-
-                <div className="flex justify-end gap-4 mt-8">
-                  <button
-                    onClick={() => !loading && setIsModalOpen(false)}
-                    className="btn btn-outline"
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpdate}
-                    className="btn btn-primary text-white"
-                    disabled={
-                      loading ||
-                      !formData.name.trim() ||
-                      !preview ||
-                      isSaveDisabled
-                    }
-                  >
-                    {loading ? (
-                      <span className="loading loading-spinner text-primary"></span>
-                    ) : (
-                      "Update"
-                    )}
-                  </button>
-                </div>
+          <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="surface-tint flex items-center gap-3 p-4">
+              <LuMail size={20} className="shrink-0 text-primary" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-xs text-muted">Email</dt>
+                <dd className="truncate text-sm font-semibold">{userEmail}</dd>
               </div>
             </div>
-          </>
-        )}
+            <div className="surface-tint flex items-center gap-3 p-4">
+              <LuShield size={20} className="shrink-0 text-primary" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-xs text-muted">Account type</dt>
+                <dd className="text-sm font-semibold capitalize">{roleLoading ? "..." : role}</dd>
+              </div>
+            </div>
+            <div className="surface-tint flex items-center gap-3 p-4">
+              <LuCalendarDays size={20} className="shrink-0 text-primary" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-xs text-muted">Member since</dt>
+                <dd className="text-sm font-semibold">{formatDate(joined)}</dd>
+              </div>
+            </div>
+            <div className="surface-tint flex items-center gap-3 p-4">
+              <LuCalendarDays size={20} className="shrink-0 text-primary" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-xs text-muted">Last sign-in</dt>
+                <dd className="text-sm font-semibold">{formatDate(lastSignIn)}</dd>
+              </div>
+            </div>
+          </dl>
+
+          {!roleLoading && role === "tourist" && (
+            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/6 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-bold">Know your region well?</p>
+                <p className="text-sm text-muted">Apply to host travelers as a local guide.</p>
+              </div>
+              <Link to="/dashboard/joinAsTourGuide" className="btn btn-primary btn-sm self-start sm:self-auto">
+                Become a guide
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
+
+      <Modal
+        open={open}
+        onClose={() => !saving && setOpen(false)}
+        title="Edit profile"
+        size="sm"
+        footer={
+          <>
+            <button type="button" className="btn btn-ghost" disabled={saving} onClick={() => setOpen(false)}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="profile-form"
+              className="btn btn-primary"
+              disabled={saving || !trimmed || unchanged}
+            >
+              {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save changes"}
+            </button>
+          </>
+        }
+      >
+        <form id="profile-form" onSubmit={handleSave} className="space-y-5">
+          <div className="flex items-center gap-4">
+            <Avatar src={preview} name={name} size="xl" />
+            <div>
+              <label htmlFor="profileImage" className="btn btn-outline btn-sm cursor-pointer">
+                Change photo
+              </label>
+              <input id="profileImage" type="file" accept="image/*" className="sr-only" onChange={handleFile} />
+              <p className="mt-2 text-xs text-muted">JPG or PNG, up to 10 MB.</p>
+            </div>
+          </div>
+          <FormField label="Full name" htmlFor="profile-name" error={!trimmed ? "Name can't be empty." : ""}>
+            <input
+              id="profile-name"
+              className="input w-full"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+            />
+          </FormField>
+        </form>
+      </Modal>
     </div>
   );
 };

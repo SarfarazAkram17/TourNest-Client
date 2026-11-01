@@ -1,163 +1,117 @@
-import { Link, NavLink } from "react-router";
-import logo from "../../assets/logo.png";
-import { RxCross2 } from "react-icons/rx";
-import { useEffect, useRef, useState } from "react";
-import { RiMenu2Line } from "react-icons/ri";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router";
+import { LuMenu, LuX } from "react-icons/lu";
 import useAuth from "../../Hooks/useAuth";
-import { toast } from "react-toastify";
+import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
+import UserMenu from "./UserMenu";
+
+export const publicLinks = [
+  { to: "/", label: "Home", end: true },
+  { to: "/allTrips", label: "All trips" },
+  { to: "/community", label: "Community" },
+  { to: "/aboutUs", label: "About" },
+];
 
 const Navbar = () => {
-  const { user, userEmail, logOutUser } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef()
+  const { user, loading } = useAuth();
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
 
-    useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const navLinks = (
-    <>
-      <NavLink
-        onClick={() => setIsOpen(false)}
-        className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/"
-      >
-        Home
-      </NavLink>
-      <NavLink
-        onClick={() => setIsOpen(false)}
-        className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/community"
-      >
-        Community
-      </NavLink>
-      <NavLink
-        onClick={() => setIsOpen(false)}
-        className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/aboutUs"
-      >
-        About Us
-      </NavLink>
-      <NavLink
-        onClick={() => setIsOpen(false)}
-        className="px-4 py-1 font-semibold rounded-full text-sm"
-        to="/allTrips"
-      >
-        All Trips
-      </NavLink>
-    </>
-  );
-
-  const handleLogout = () => {
-    logOutUser()
-      .then(() => {
-        toast.warn("You Logout from TourNest");
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      });
-  };
+  const linkClass = ({ isActive }) =>
+    `rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+      isActive
+        ? "bg-primary/10 text-primary"
+        : "text-base-content/75 hover:bg-base-content/6 hover:text-base-content"
+    }`;
 
   return (
- <div ref={menuRef} className="bg-base-100 py-0 shadow sticky z-50 top-0">
-     <div className="navbar max-w-7xl mx-auto px-4">
-      <div className="navbar-start">
-        <div className="md:hidden mr-2">
-          <button onClick={() => setIsOpen(!isOpen)} className="btn btn-ghost">
-            {isOpen ? <RxCross2 size={20} /> : <RiMenu2Line size={20} />}
+    <header className="sticky top-0 z-40 border-b border-base-content/10 bg-base-100/85 backdrop-blur-md">
+      <div className="container-page flex h-16 items-center justify-between gap-2 sm:h-[4.5rem]">
+        <Logo />
+
+        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+          {publicLinks.map((link) => (
+            <NavLink key={link.to} to={link.to} end={link.end} className={linkClass}>
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-1 sm:gap-2">
+          <ThemeToggle />
+          {!loading &&
+            (user ? (
+              <UserMenu />
+            ) : (
+              <div className="hidden items-center gap-2 sm:flex">
+                <Link to="/login" className="btn btn-ghost">
+                  Log in
+                </Link>
+                <Link to="/register" className="btn btn-primary">
+                  Sign up
+                </Link>
+              </div>
+            ))}
+          <button
+            type="button"
+            className="btn btn-ghost btn-circle md:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? "Close menu" : "Open menu"}
+          >
+            {open ? <LuX size={22} /> : <LuMenu size={22} />}
           </button>
         </div>
-
-        <Link to="/">
-          <img src={logo} alt="TourNest Logo" className="h-10 sm:h-12 w-auto" />
-        </Link>
       </div>
 
-      <div className="navbar-center hidden md:flex">
-        <ul className="menu menu-horizontal px-1">{navLinks}</ul>
-      </div>
-
-      <div className="navbar-end">
-        {user ? (
-          <>
-            <div className="dropdown dropdown-bottom dropdown-end">
-              <div tabIndex={0} role="button">
-                <img
-                  src={user.photoURL}
-                  alt="Profile"
-                  className="rounded-full object-cover w-13 mr-2 h-13 cursor-pointer"
-                />
-              </div>
-              <ul
-                tabIndex={0}
-                className="menu menu-sm dropdown-content bg-base-100 w-56 rounded-box z-10 mt-1 space-y-2 text-center shadow"
-              >
-                <li className="text-xs">Hi, {user.displayName}</li>
-                <li className="text-xs">{userEmail}</li>
-                <NavLink
-                  className="px-4 py-1 font-semibold rounded-full text-sm"
-                  to="/dashboard"
-                >
-                  Dashboard
-                </NavLink>
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-sm font-bold w-[50%] mx-auto btn-error"
-                >
-                  Logout
-                </button>
-              </ul>
-            </div>
-          </>
-        ) : (
-          <>
-            <Link to="/login">
-              <button className="btn bg-primary text-white border-2 border-primary hover:bg-transparent hover:text-primary mr-2">
-                Login
-              </button>
-            </Link>
-            <Link to="/register" className="hidden md:inline">
-              <button className="btn bg-transparent text-primary border-2 border-primary hover:bg-primary hover:text-white">
-                Register
-              </button>
-            </Link>
-          </>
-        )}
-      </div>
-
-      {/* Mobile Dropdown */}
-      {isOpen && (
+      {open && (
         <div
-          className="absolute top-full w-40 -mt-2 left-4 z-10 md:hidden bg-base-100 rounded-box p-2 place-items-center shadow"
+          id="mobile-menu"
+          className="border-t border-base-content/10 bg-base-100 md:hidden"
+          style={{ animation: "tn-pop 0.15s ease-out" }}
         >
-          <ul className="menu space-y-2 text-center">
-            {navLinks}
-            {!user && (
-              <Link to="/register" onClick={() => setIsOpen(false)}>
-                <button className="btn bg-transparent w-full text-primary border-2 border-primary hover:bg-primary hover:text-white">
-                  Register
-                </button>
-              </Link>
+          <nav aria-label="Mobile" className="container-page flex flex-col gap-1 py-4">
+            {publicLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                className={({ isActive }) =>
+                  `rounded-xl px-4 py-3 text-base font-semibold ${
+                    isActive ? "bg-primary/10 text-primary" : "hover:bg-base-content/6"
+                  }`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+            {!loading && !user && (
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:hidden">
+                <Link to="/login" className="btn btn-outline">
+                  Log in
+                </Link>
+                <Link to="/register" className="btn btn-primary">
+                  Sign up
+                </Link>
+              </div>
             )}
-          </ul>
+          </nav>
         </div>
       )}
-    </div>
- </div>
+    </header>
   );
 };
 

@@ -1,351 +1,295 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { useState } from "react";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { LuCheck, LuClipboardCheck, LuEye, LuX } from "react-icons/lu";
 import useAuth from "../../../Hooks/useAuth";
-import Loading from "../../../Components/Loading/Loading";
-import Swal from "sweetalert2";
-import Select from "react-select";
-import {
-  MdKeyboardDoubleArrowRight,
-  MdOutlineKeyboardDoubleArrowLeft,
-  MdVisibility,
-  MdCheckCircle,
-  MdCancel,
-} from "react-icons/md";
-import { FiX } from "react-icons/fi";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useDebounce from "../../../Hooks/useDebounce";
+import useLocations from "../../../Hooks/useLocations";
+import useDocumentTitle from "../../../Hooks/useDocumentTitle";
+import PageHeader from "../../../Components/UI/PageHeader";
+import SearchInput from "../../../Components/UI/SearchInput";
+import Pagination from "../../../Components/UI/Pagination";
+import EmptyState from "../../../Components/UI/EmptyState";
+import Modal from "../../../Components/UI/Modal";
+import Avatar from "../../../Components/UI/Avatar";
+import { ListSkeleton } from "../../../Components/UI/Skeletons";
+import { confirmAction, getErrorMessage } from "../../../utils/alerts";
+import { formatDate, formatDateTime } from "../../../utils/format";
+
+const PAGE_SIZE = 10;
+
+const Detail = ({ label, children, wide }) => (
+  <div className={wide ? "sm:col-span-2" : ""}>
+    <dt className="text-xs text-muted">{label}</dt>
+    <dd className="mt-0.5 whitespace-pre-line break-words text-sm font-medium">{children}</dd>
+  </div>
+);
 
 const ManageCandidates = () => {
+  useDocumentTitle("Guide applications");
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
   const { userEmail } = useAuth();
+  const { regions } = useLocations();
+
   const [page, setPage] = useState(1);
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [regionOptions, setRegionOptions] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [region, setRegion] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const search = useDebounce(searchInput.trim(), 350);
 
-  useEffect(() => {
-    fetch("/regions.json")
-      .then((res) => res.json())
-      .then((data) => {
-        const options = data.map((region) => ({
-          value: region,
-          label: region,
-        }));
-        setRegionOptions(options);
-      });
-  }, []);
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["candidates", page, searchTerm, selectedRegion],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/applications?email=${userEmail}`, {
-        params: {
-          page,
-          limit: 10,
-          status: "pending",
-          search: searchTerm,
-          region: selectedRegion?.value || "",
-        },
-      });
-      return res.data;
-    },
-    keepPreviousData: true,
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["candidates", page, search, region],
+    queryFn: async () =>
+      (
+        await axiosSecure.get(`/applications?email=${userEmail}`, {
+          params: { page, limit: PAGE_SIZE, status: "pending", search, region },
+        })
+      ).data,
+    placeholderData: keepPreviousData,
+    enabled: !!userEmail,
   });
 
   const candidates = data?.applications || [];
-  const totalPages = Math.ceil((data?.total || 0) / 10);
+  const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
 
-  const handlePageChange = (newPage) => setPage(newPage);
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
-  const handleRegionChange = (selected) => {
-    setSelectedRegion(selected);
-    setPage(1);
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["candidates"] });
+    queryClient.invalidateQueries({ queryKey: ["adminStats"] });
+    queryClient.invalidateQueries({ queryKey: ["users"] });
   };
 
-  const handleView = (candidate) => {
-    setSelectedCandidate(candidate);
-    setShowModal(true);
-  };
-
-  // Confirm before Accepting
-  const handleAccept = (candidate) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: `Accept ${candidate.name} as a tour guide?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, accept",
-      cancelButtonText: "Cancel",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const res = await axiosSecure.patch(
-            `/applications?email=${userEmail}`,
-            { role: "tour guide", candidate }
-          );
-
-          if (res.data.modifiedCount > 0) {
-            await axiosSecure.delete(
-              `/applications/${candidate._id}?email=${userEmail}`
-            );
-            Swal.fire(
-              "Accepted!",
-              `${candidate.name} is now a tour guide.`,
-              "success"
-            );
-            refetch();
-          }
-        } catch (error) {
-          Swal.fire(
-            error.message,
-            "Something went wrong while accepting.",
-            "error"
-          );
-        }
-      }
+  const handleAccept = async (candidate) => {
+    const ok = await confirmAction({
+      title: "Approve this guide?",
+      text: `${candidate.name} will become a tour guide and can be booked right away.`,
+      confirmText: "Approve guide",
     });
+    if (!ok) return;
+
+    setBusy(true);
+    try {
+      await axiosSecure.patch(`/applications?email=${userEmail}`, { applicationId: candidate._id });
+      toast.success(`${candidate.name} is now a tour guide.`);
+      setSelected(null);
+      refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "We couldn't approve this application."));
+    } finally {
+      setBusy(false);
+    }
   };
 
-  // Confirm before Rejecting
-  const handleReject = (id) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: `Reject this application?`,
+  const handleReject = async (candidate) => {
+    const ok = await confirmAction({
+      title: "Decline this application?",
+      text: `${candidate.name} will be able to apply again.`,
+      confirmText: "Decline",
       icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, reject",
-      cancelButtonText: "Cancel",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await axiosSecure.delete(`/applications/${id}?email=${userEmail}`);
-          Swal.fire("Rejected", "The application has been removed.", "info");
-          refetch();
-        } catch (error) {
-          Swal.fire(
-            error.message,
-            "Something went wrong while rejecting.",
-            "error"
-          );
-        }
-      }
+      danger: true,
     });
+    if (!ok) return;
+
+    setBusy(true);
+    try {
+      await axiosSecure.delete(`/applications/${candidate._id}?email=${userEmail}`);
+      toast.info("Application declined.");
+      setSelected(null);
+      refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "We couldn't decline this application."));
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const actions = (c) => (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelected(c)}>
+        <LuEye size={16} aria-hidden="true" /> Review
+      </button>
+      <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => handleAccept(c)}>
+        <LuCheck size={16} aria-hidden="true" /> Approve
+      </button>
+      <button
+        type="button"
+        className="btn btn-outline btn-error btn-sm"
+        disabled={busy}
+        onClick={() => handleReject(c)}
+        aria-label={`Decline ${c.name}`}
+      >
+        <LuX size={16} aria-hidden="true" />
+      </button>
+    </div>
+  );
 
   return (
-    <div className="px-4">
-      <h2 className="text-2xl font-bold mb-6 text-center text-primary">
-        Manage Candidates
-      </h2>
+    <div>
+      <PageHeader
+        title="Guide applications"
+        description="Review each applicant's experience and CV before approving them as a guide."
+      />
 
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <label className="input input-bordered w-full md:w-1/3">
-          <svg
-            className="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeWidth="2.5"
-              fill="none"
-              stroke="currentColor"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </g>
-          </svg>
-          <input
-            type="search"
-            placeholder="Search by name"
-            value={searchTerm}
-            onChange={handleSearchChange}
+      <div className="surface p-4 sm:p-5">
+        <div className="grid gap-3 sm:grid-cols-[1fr_14rem]">
+          <SearchInput
+            value={searchInput}
+            onChange={(v) => {
+              setSearchInput(v);
+              setPage(1);
+            }}
+            placeholder="Search by applicant name"
           />
-        </label>
+          <select
+            className="select w-full"
+            value={region}
+            onChange={(e) => {
+              setRegion(e.target.value);
+              setPage(1);
+            }}
+            aria-label="Filter by region"
+          >
+            <option value="">All regions</option>
+            {regions.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <Select
-          options={regionOptions}
-          isClearable
-          value={selectedRegion}
-          onChange={handleRegionChange}
-          placeholder="Filter by region"
-          className="w-full md:w-1/3"
-        />
+        <div className={`mt-5 transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+          {isLoading ? (
+            <ListSkeleton rows={4} />
+          ) : candidates.length === 0 ? (
+            <EmptyState
+              icon={LuClipboardCheck}
+              title="No pending applications"
+              description="You're all caught up. New applications will appear here."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <>
+              <div className="scroll-thin hidden overflow-x-auto lg:block">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Applicant</th>
+                      <th>Location</th>
+                      <th>Experience</th>
+                      <th>Applied</th>
+                      <th>
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {candidates.map((c) => (
+                      <tr key={c._id}>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <Avatar src={c.photo} name={c.name} size="sm" />
+                            <div className="min-w-0">
+                              <p className="max-w-[14rem] truncate font-semibold">{c.name}</p>
+                              <p className="max-w-[14rem] truncate text-xs text-muted">{c.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap">
+                          {c.district}, {c.region}
+                        </td>
+                        <td className="whitespace-nowrap">{c.experience} yrs</td>
+                        <td className="whitespace-nowrap">{formatDate(c.createdAt)}</td>
+                        <td>{actions(c)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <ul className="space-y-3 lg:hidden">
+                {candidates.map((c) => (
+                  <li key={c._id} className="surface-tint p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={c.photo} name={c.name} size="md" />
+                      <div className="min-w-0">
+                        <p className="truncate font-bold">{c.name}</p>
+                        <p className="truncate text-xs text-muted">{c.email}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-muted">
+                      {c.district}, {c.region}. {c.experience} years of experience. Applied{" "}
+                      {formatDate(c.createdAt)}.
+                    </p>
+                    <div className="mt-4">{actions(c)}</div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
 
-      {isLoading ? (
-        <Loading />
-      ) : candidates.length === 0 ? (
-        <p className="text-center text-gray-600 text-lg">
-          No pending applications.
-        </p>
-      ) : (
-        <>
-          <div className="overflow-x-auto border border-base-content/10 rounded-lg">
-            <table className="table w-full text-center table-sm">
-              <thead>
-                <tr className="bg-base-200">
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Region</th>
-                  <th>District</th>
-                  <th>Phone</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidates.map((app, i) => (
-                  <tr key={app._id}>
-                    <td>{(page - 1) * 10 + i + 1}</td>
-                    <td>{app.name}</td>
-                    <td>{app.email}</td>
-                    <td>{app.region}</td>
-                    <td>{app.district}</td>
-                    <td>{app.phone}</td>
-                    <td className="flex gap-1 justify-center items-center">
-                      <button
-                        className="btn btn-xs btn-info text-white"
-                        onClick={() => handleView(app)}
-                      >
-                        <MdVisibility size={16} />
-                      </button>
-                      <button
-                        className="btn btn-xs btn-success text-white"
-                        onClick={() => handleAccept(app)}
-                      >
-                        <MdCheckCircle size={16} />
-                      </button>
-                      <button
-                        className="btn btn-xs btn-error text-white"
-                        onClick={() => handleReject(app._id)}
-                      >
-                        <MdCancel size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex justify-center mt-6 flex-wrap gap-2">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className={`btn btn-sm ${
-                page === 1
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdOutlineKeyboardDoubleArrowLeft size={20} />
-            </button>
-
-            {[...Array(totalPages).keys()].map((n) => (
-              <button
-                key={n}
-                onClick={() => handlePageChange(n + 1)}
-                className={`btn btn-sm ${
-                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
-                }`}
-              >
-                {n + 1}
+      <Modal
+        open={!!selected}
+        onClose={() => !busy && setSelected(null)}
+        title="Application review"
+        description={selected?.applicationTitle}
+        size="lg"
+        footer={
+          selected && (
+            <>
+              <button type="button" className="btn btn-outline btn-error" disabled={busy} onClick={() => handleReject(selected)}>
+                Decline
               </button>
-            ))}
-
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages || totalPages === 0}
-              className={`btn btn-sm ${
-                page === totalPages || totalPages === 0
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdKeyboardDoubleArrowRight size={20} />
-            </button>
-          </div>
-        </>
-      )}
-
-      {showModal && selectedCandidate && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50 px-2">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 relative shadow-xl">
-            <h3 className="text-2xl sm:text-3xl font-bold mb-4 text-primary text-center">
-              Candidate Details
-            </h3>
-            <button
-              className="absolute right-3 top-3 text-gray-500 hover:text-red-500 text-lg"
-              onClick={() => {
-                setShowModal(false);
-                setSelectedCandidate(null);
-              }}
-            >
-              <FiX size={26} />
-            </button>
-            <div className="space-y-2 text-sm md:text-base pb-4">
-              <p>
-                <strong>Name:</strong> {selectedCandidate.name}
-              </p>
-              <p>
-                <strong>Email:</strong> {selectedCandidate.email}
-              </p>
-              <p>
-                <strong>Phone:</strong> {selectedCandidate.phone}
-              </p>
-              <p>
-                <strong>Region:</strong> {selectedCandidate.region}
-              </p>
-              <p>
-                <strong>District:</strong> {selectedCandidate.district}
-              </p>
-              <p>
-                <strong>Application Title:</strong>{" "}
-                {selectedCandidate.applicationTitle}
-              </p>
-              <p>
-                <strong>Reason:</strong> {selectedCandidate.reason}
-              </p>
-              <p>
-                <strong>CV Link:</strong>{" "}
-                <a
-                  href={selectedCandidate.cvLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  View CV
-                </a>
-              </p>
-              <p>
-                <strong>Experience:</strong> {selectedCandidate.experience}{" "}
-                years
-              </p>
-              <p>
-                <strong>Languages:</strong>{" "}
-                {selectedCandidate.languages.join(", ")}
-              </p>
-              <p>
-                <strong>Bio:</strong> {selectedCandidate.bio}
-              </p>
-              <p>
-                <strong>Age:</strong> {selectedCandidate.age}
-              </p>
-              <p>
-                <strong>Submitted:</strong>{" "}
-                {new Date(selectedCandidate.createdAt).toLocaleString()}
-              </p>
+              <button type="button" className="btn btn-primary" disabled={busy} onClick={() => handleAccept(selected)}>
+                Approve as guide
+              </button>
+            </>
+          )
+        }
+      >
+        {selected && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Avatar src={selected.photo} name={selected.name} size="lg" />
+              <div className="min-w-0">
+                <p className="truncate text-lg font-bold">{selected.name}</p>
+                <p className="truncate text-sm text-muted">{selected.email}</p>
+              </div>
             </div>
+            <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+              <Detail label="Phone">{selected.phone}</Detail>
+              <Detail label="Age">{selected.age}</Detail>
+              <Detail label="Region">{selected.region}</Detail>
+              <Detail label="District">{selected.district}</Detail>
+              <Detail label="Experience">{selected.experience} years</Detail>
+              <Detail label="Languages">{(selected.languages || []).join(", ")}</Detail>
+              <Detail label="Why they want to guide" wide>
+                {selected.reason}
+              </Detail>
+              <Detail label="Bio" wide>
+                {selected.bio}
+              </Detail>
+              <Detail label="CV" wide>
+                <a
+                  href={selected.cvLink}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-primary underline underline-offset-4"
+                >
+                  Open CV in a new tab
+                </a>
+              </Detail>
+              <Detail label="Submitted">{formatDateTime(selected.createdAt)}</Detail>
+            </dl>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 };

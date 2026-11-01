@@ -1,256 +1,288 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { LuCalendarX, LuEye } from "react-icons/lu";
 import useAuth from "../../../Hooks/useAuth";
-import Swal from "sweetalert2";
-import Loading from "../../../Components/Loading/Loading";
-import {
-  MdKeyboardDoubleArrowRight,
-  MdOutlineKeyboardDoubleArrowLeft,
-} from "react-icons/md";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useBookingActions from "../../../Hooks/useBookingActions";
+import useDebounce from "../../../Hooks/useDebounce";
+import useDocumentTitle from "../../../Hooks/useDocumentTitle";
+import PageHeader from "../../../Components/UI/PageHeader";
+import SearchInput from "../../../Components/UI/SearchInput";
+import Pagination from "../../../Components/UI/Pagination";
+import EmptyState from "../../../Components/UI/EmptyState";
+import Avatar from "../../../Components/UI/Avatar";
+import Modal from "../../../Components/UI/Modal";
+import BookingProgress from "../../../Components/UI/BookingProgress";
+import { BookingBadge, PaymentBadge } from "../../../Components/UI/StatusBadge";
+import { ListSkeleton } from "../../../Components/UI/Skeletons";
+import { getBookingStatus } from "../../../utils/constants";
+import { formatBDT, formatDate, formatDateTime } from "../../../utils/format";
+
+const PAGE_SIZE = 10;
+
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "in review", label: "Needs your response" },
+  { value: "accepted", label: "Confirmed" },
+  { value: "pending", label: "Awaiting payment" },
+  { value: "rejected", label: "Declined" },
+];
 
 const MyAssignedTours = () => {
+  useDocumentTitle("Assigned tours");
   const { userEmail } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const { accept, reject, busyId } = useBookingActions();
 
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [status, setStatus] = useState("all");
+  const [selected, setSelected] = useState(null);
+  const search = useDebounce(searchInput.trim(), 350);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["assignedTours", userEmail, page, searchTerm],
-    queryFn: async () => {
-      const res = await axiosSecure.get(
-        `/bookings/tourGuide/assigned?email=${userEmail}`,
-        {
-          params: {
-            page,
-            limit: 10,
-            search: searchTerm,
-          },
-        }
-      );
-      return res.data;
-    },
-    keepPreviousData: true,
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["assignedTours", userEmail, page, search, status],
+    queryFn: async () =>
+      (
+        await axiosSecure.get(`/bookings/tourGuide/assigned?email=${userEmail}`, {
+          params: { page, limit: PAGE_SIZE, search, status },
+        })
+      ).data,
+    placeholderData: keepPreviousData,
     enabled: !!userEmail,
-    refetchInterval: 1000,
+    refetchInterval: 15000,
   });
 
-  const assignedTours = data?.bookings || [];
-  const totalPages = Math.ceil((data?.total || 0) / 10);
+  const tours = data?.bookings || [];
+  const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
 
-  const handlePageChange = (newPage) => setPage(newPage);
+  const detailsButton = (t) => (
+    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelected(t)}>
+      <LuEye size={16} aria-hidden="true" /> Details
+    </button>
+  );
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
-
-  const handleAccept = async (id, status) => {
-    if (status !== "in review") return;
-
-    try {
-      await axiosSecure.patch(`/bookings/${id}?email=${userEmail}`, {
-        status: "accepted",
-      });
-      Swal.fire("Accepted!", "You have accepted the tour.", "success");
-      refetch();
-    } catch (error) {
-      Swal.fire("Error", error.message || "Failed to accept tour.", "error");
-    }
-  };
-
-  const handleReject = async (id, status) => {
-    if (status !== "pending") return;
-
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Rejecting this tour will change its status to 'Rejected'.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Reject",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await axiosSecure.patch(`/bookings/${id}?email=${userEmail}`, {
-          status: "rejected",
-        });
-        Swal.fire("Rejected!", "Tour has been rejected.", "success");
-        refetch();
-      } catch (error) {
-        Swal.fire("Error", error.message || "Failed to reject tour.", "error");
-      }
-    }
-  };
-
-  return (
-    <div className="px-4">
-      <h2 className="text-3xl font-bold text-center text-primary mb-6">
-        My Assigned Tours
-      </h2>
-
-      {/* Search */}
-      <label className="input input-bordered w-full mb-8">
-        <svg
-          className="h-[1em] opacity-50"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          type="search"
-          placeholder="Search by package name"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="w-full"
-        />
-      </label>
-
-      {isLoading ? (
-        <Loading />
-      ) : assignedTours.length === 0 ? (
-        <p className="text-center text-gray-600 text-xl mt-6">
-          No assigned tours found.
-        </p>
-      ) : (
+  const renderActions = (t) => (
+    <div className="flex flex-wrap items-center gap-2">
+      {t.status === "in review" && (
         <>
-          <div className="overflow-x-auto border border-base-content/10 rounded-lg">
-            <table className="table w-full text-center table-xs">
-              <thead>
-                <tr className="bg-base-200 text-sm">
-                  <th>#</th>
-                  <th>Package Name</th>
-                  <th>Tourist Name</th>
-                  <th>Tour Date</th>
-                  <th>Tour Price</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignedTours.map((tour, i) => (
-                  <tr key={tour._id}>
-                    <td>{(page - 1) * 10 + i + 1}</td>
-                    <td className="truncate max-w-[50px]" title={tour.packageName}>{tour.packageName}</td>
-                    <td>{tour.touristName}</td>
-                    <td>
-                      {new Date(tour.tourDate).toLocaleDateString("en-BD", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </td>
-                    <td>৳{tour.price.toLocaleString("en-BD")}</td>
-                    <td className="capitalize">
-                      {tour.status === "pending" ? (
-                        <span className="text-gray-600">Pending</span>
-                      ) : tour.status === "in review" ? (
-                        <span className="text-blue-600 font-semibold">
-                          In Review
-                        </span>
-                      ) : tour.status === "accepted" ? (
-                        <span className="text-green-600 font-semibold">
-                          Accepted
-                        </span>
-                      ) : (
-                        tour.status === "rejected" && (
-                          <span className="text-red-600 font-semibold">
-                            Rejected
-                          </span>
-                        )
-                      )}
-                    </td>
-                    <td className="flex items-center justify-center gap-1">
-                      {tour.status === "accepted" ||
-                      tour.status === "rejected" ? (
-                        " - - "
-                      ) : (
-                        <>
-                          <button
-                            className={`btn btn-xs ${
-                              tour.status === "in review"
-                                ? "btn-primary text-white"
-                                : "btn-disabled text-black/50"
-                            }`}
-                            onClick={() => handleAccept(tour._id, tour.status)}
-                            title={
-                              tour.status === "in review"
-                                ? "Accept this tour"
-                                : "Accept button disabled"
-                            }
-                          >
-                            Accept
-                          </button>
-
-                          {tour.status === "pending" && (
-                            <button
-                              className="btn btn-xs btn-error text-white"
-                              onClick={() =>
-                                handleReject(tour._id, tour.status)
-                              }
-                              title="Reject this tour"
-                            >
-                              Reject
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-6 gap-2 flex-wrap">
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className={`btn btn-sm ${
-                page === 1
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdOutlineKeyboardDoubleArrowLeft size={20} />
-            </button>
-
-            {[...Array(totalPages).keys()].map((n) => (
-              <button
-                key={n}
-                onClick={() => handlePageChange(n + 1)}
-                className={`btn btn-sm ${
-                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
-                }`}
-              >
-                {n + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages || totalPages === 0}
-              className={`btn btn-sm ${
-                page === totalPages || totalPages === 0
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdKeyboardDoubleArrowRight size={20} />
-            </button>
-          </div>
+          <button type="button" className="btn btn-primary btn-sm" disabled={busyId === t._id} onClick={() => accept(t)}>
+            Accept
+          </button>
+          <button type="button" className="btn btn-outline btn-error btn-sm" disabled={busyId === t._id} onClick={() => reject(t)}>
+            Decline
+          </button>
         </>
       )}
+      {t.status === "pending" && (
+        <button type="button" className="btn btn-ghost btn-sm text-error" disabled={busyId === t._id} onClick={() => reject(t)}>
+          Decline
+        </button>
+      )}
+      {detailsButton(t)}
+    </div>
+  );
+
+  // keep the open dialog in sync with refreshed data
+  const selectedLive = selected ? tours.find((t) => t._id === selected._id) || selected : null;
+
+  return (
+    <div>
+      <PageHeader
+        title="Assigned tours"
+        description="Travelers who booked you. Accept paid bookings to confirm the trip."
+      />
+
+      <div className="surface p-4 sm:p-5">
+        <SearchInput
+          value={searchInput}
+          onChange={(v) => {
+            setSearchInput(v);
+            setPage(1);
+          }}
+          placeholder="Search by package name"
+        />
+
+        <div className="scroll-thin -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Filter tours">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              role="tab"
+              aria-selected={status === f.value}
+              onClick={() => {
+                setStatus(f.value);
+                setPage(1);
+              }}
+              className={`btn btn-sm shrink-0 rounded-full ${
+                status === f.value ? "btn-primary" : "btn-ghost border border-base-content/15"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={`mt-5 transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+          {isLoading ? (
+            <ListSkeleton rows={5} />
+          ) : tours.length === 0 ? (
+            <EmptyState
+              icon={LuCalendarX}
+              title="No tours here"
+              description={
+                status === "all" && !search
+                  ? "When a traveler books you, the request shows up on this page."
+                  : "Try a different filter or search term."
+              }
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <>
+              <div className="scroll-thin hidden overflow-x-auto md:block">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Traveler</th>
+                      <th>Trip</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tours.map((t) => (
+                      <tr key={t._id}>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <Avatar src={t.touristImage} name={t.touristName} size="sm" />
+                            <span className="max-w-[9rem] truncate font-semibold">{t.touristName}</span>
+                          </div>
+                        </td>
+                        <td className="max-w-[14rem]">
+                          <p className="truncate font-bold" title={t.packageName}>
+                            {t.packageName}
+                          </p>
+                          <p className="text-xs tabular-nums text-muted">{formatBDT(t.price)}</p>
+                        </td>
+                        <td className="whitespace-nowrap">{formatDate(t.tourDate)}</td>
+                        <td>
+                          <BookingBadge status={getBookingStatus(t)} />
+                        </td>
+                        <td>{renderActions(t)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <ul className="space-y-3 md:hidden">
+                {tours.map((t) => (
+                  <li key={t._id} className="surface-tint p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={t.touristImage} name={t.touristName} size="sm" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">{t.touristName}</p>
+                        <p className="text-xs text-muted">{formatDate(t.tourDate)}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 font-bold leading-snug">{t.packageName}</p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <BookingBadge status={getBookingStatus(t)} />
+                      <span className="text-sm font-bold tabular-nums">{formatBDT(t.price)}</span>
+                    </div>
+                    <div className="mt-4">{renderActions(t)}</div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      </div>
+
+      <Modal
+        open={!!selectedLive}
+        onClose={() => setSelected(null)}
+        title={selectedLive?.packageName}
+        description="Tour details"
+        size="md"
+        footer={
+          selectedLive && (selectedLive.status === "in review" || selectedLive.status === "pending") ? (
+            <>
+              <button
+                type="button"
+                className="btn btn-outline btn-error"
+                disabled={busyId === selectedLive._id}
+                onClick={async () => {
+                  if (await reject(selectedLive)) setSelected(null);
+                }}
+              >
+                Decline
+              </button>
+              {selectedLive.status === "in review" && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={busyId === selectedLive._id}
+                  onClick={async () => {
+                    if (await accept(selectedLive)) setSelected(null);
+                  }}
+                >
+                  Accept tour
+                </button>
+              )}
+            </>
+          ) : null
+        }
+      >
+        {selectedLive && (
+          <div className="space-y-6">
+            <BookingProgress booking={selectedLive} />
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+              <div className="col-span-2">
+                <dt className="mb-1 text-xs text-muted">Traveler</dt>
+                <dd className="flex items-center gap-2 font-semibold">
+                  <Avatar src={selectedLive.touristImage} name={selectedLive.touristName} size="xs" />
+                  <span className="min-w-0 truncate">{selectedLive.touristName}</span>
+                </dd>
+                <dd className="mt-1 break-all text-xs text-muted">{selectedLive.touristEmail}</dd>
+              </div>
+              <div>
+                <dt className="mb-1 text-xs text-muted">Travel date</dt>
+                <dd className="font-semibold">{formatDate(selectedLive.tourDate)}</dd>
+              </div>
+              <div>
+                <dt className="mb-1 text-xs text-muted">Price</dt>
+                <dd className="font-semibold tabular-nums">{formatBDT(selectedLive.price)}</dd>
+              </div>
+              <div>
+                <dt className="mb-1 text-xs text-muted">Status</dt>
+                <dd>
+                  <BookingBadge status={getBookingStatus(selectedLive)} />
+                </dd>
+              </div>
+              <div>
+                <dt className="mb-1 text-xs text-muted">Payment</dt>
+                <dd>
+                  <PaymentBadge status={selectedLive.payment_status} />
+                </dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="mb-1 text-xs text-muted">Booked on</dt>
+                <dd className="font-semibold">{formatDateTime(selectedLive.bookingAt)}</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="mb-1 text-xs text-muted">Booking ID</dt>
+                <dd className="break-all font-mono text-xs">{selectedLive._id}</dd>
+              </div>
+            </dl>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

@@ -1,40 +1,46 @@
-import { useState, useEffect, useRef } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import Select from "react-select";
-import axios from "axios";
-import { FiEdit3, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { LuBriefcase, LuCalendarDays, LuLanguages, LuMapPin, LuPencil, LuPhone, LuUserRound } from "react-icons/lu";
 import useAuth from "../../../Hooks/useAuth";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useLocations from "../../../Hooks/useLocations";
+import useDocumentTitle from "../../../Hooks/useDocumentTitle";
+import PageHeader from "../../../Components/UI/PageHeader";
+import Avatar from "../../../Components/UI/Avatar";
+import Modal from "../../../Components/UI/Modal";
+import FormField from "../../../Components/UI/FormField";
 import Loading from "../../../Components/Loading/Loading";
+import { uploadImage } from "../../../utils/cloudinary";
+import { getErrorMessage } from "../../../utils/alerts";
+import { formatDate } from "../../../utils/format";
+
+const Fact = ({ icon: Icon, label, children }) => (
+  <div className="surface-tint flex items-start gap-3 p-4">
+    <Icon size={20} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+    <div className="min-w-0">
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="break-words text-sm font-semibold">{children}</dd>
+    </div>
+  </div>
+);
 
 const ManageGuideProfile = () => {
+  useDocumentTitle("Guide profile");
   const axiosSecure = useAxiosSecure();
   const { userEmail } = useAuth();
+  const { regions, districts } = useLocations();
 
-  const [regions, setRegions] = useState([]);
-  const [districtMap, setDistrictMap] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null);
-
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [localPreview, setLocalPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  const previewUrlRef = useRef(null);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const {
-    data: guideInfo,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data: info, isLoading, refetch } = useQuery({
     queryKey: ["guideInfo", userEmail],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/users/guide-info?email=${userEmail}`);
-      return res.data;
-    },
+    queryFn: async () => (await axiosSecure.get(`/users/guide-info?email=${userEmail}`)).data,
     enabled: !!userEmail,
   });
 
@@ -42,412 +48,232 @@ const ManageGuideProfile = () => {
     register,
     handleSubmit,
     reset,
-    control,
-    getValues,
-    formState: { errors, dirtyFields },
-  } = useForm({
-    mode: "onChange",
-  });
+    watch,
+    setValue,
+    formState: { errors, isDirty },
+  } = useForm();
 
-  // Use useWatch for region to prevent issues
-  const selectedRegion = useWatch({ control, name: "region" });
-
-  // Fetch regions and districts data once
-  useEffect(() => {
-    const fetchLocationData = async () => {
-      const regionRes = await fetch("/regions.json");
-      const regionData = await regionRes.json();
-      setRegions(regionData);
-
-      const districtRes = await fetch("/districts.json");
-      const districtData = await districtRes.json();
-      setDistrictMap(districtData);
-    };
-
-    fetchLocationData();
-  }, []);
+  const region = watch("region");
+  const districtOptions = districts[region] || [];
 
   useEffect(() => {
-    if (guideInfo) {
+    if (open && info) {
       reset({
-        ...guideInfo,
-        languages: guideInfo.languages?.join(", "),
-        region: { value: guideInfo.region, label: guideInfo.region },
-        district: { value: guideInfo.district, label: guideInfo.district },
+        name: info.name,
+        phone: info.phone,
+        region: info.region,
+        district: info.district,
+        experience: info.experience,
+        age: info.age,
+        languages: (info.languages || []).join(", "),
+        bio: info.bio,
       });
-
-      if (!isModalOpen) {
-        setPreview(guideInfo.photo);
-      }
-
-      setSelectedFile(null);
+      setPreview(info.photo);
+      setFile(null);
     }
-  }, [guideInfo, reset, isModalOpen]);
+  }, [open, info, reset]);
 
   useEffect(() => {
-    if (isModalOpen) {
-      setLocalPreview(preview);
+    return () => {
+      if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  const handleFile = (e) => {
+    const picked = e.target.files?.[0];
+    if (!picked) return;
+    if (!picked.type.startsWith("image/")) {
+      toast.error("Choose an image file.");
+      return;
     }
-  }, [isModalOpen, preview]);
-
-  useEffect(() => {
-    if (!selectedRegion) return;
-
-    const firstDistrict = districtMap[selectedRegion.value]?.[0];
-    const currentDistrict = getValues("district")?.value;
-
-    if (firstDistrict && currentDistrict !== firstDistrict) {
-      reset((prev) => ({
-        ...prev,
-        district: { value: firstDistrict, label: firstDistrict },
-      }));
-    }
-  }, [selectedRegion ,selectedRegion?.value, districtMap, reset, getValues]);
-
-  const getDistrictOptions = () => {
-    if (!selectedRegion) return [];
-    return (
-      districtMap[selectedRegion.value]?.map((d) => ({
-        label: d,
-        value: d,
-      })) || []
-    );
+    setFile(picked);
+    setPreview(URL.createObjectURL(picked));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = URL.createObjectURL(file);
-      setSelectedFile(file);
-      setLocalPreview(previewUrlRef.current);
-    }
-  };
-
-  const handleUpdateGuideInfo = async (data) => {
-    setLoading(true);
+  const onSubmit = async (data) => {
+    setSaving(true);
     try {
-      let imageUrl = guideInfo?.photo || "";
-
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append(
-          "upload_preset",
-          import.meta.env.VITE_cloudinary_preset_name
-        );
-
-        const cloudinaryRes = await axios.post(
-          `https://api.cloudinary.com/v1_1/${
-            import.meta.env.VITE_cloudinary_cloud_name
-          }/image/upload`,
-          formData
-        );
-        imageUrl = cloudinaryRes.data.secure_url;
-      }
-
-      const updated = {
-        ...data,
-        region: data.region.value,
-        district: data.district.value,
-        photo: imageUrl,
-        languages: data.languages.split(",").map((lang) => lang.trim()),
-      };
-
-      await axiosSecure.patch(`/users/guide-info?email=${userEmail}`, updated);
-      toast.success("Guide profile updated!");
-      setIsModalOpen(false);
-      setSelectedFile(null);
-      setPreview(imageUrl);
+      const photo = file ? await uploadImage(file) : info.photo;
+      await axiosSecure.patch(`/users/guide-info?email=${userEmail}`, {
+        name: data.name.trim(),
+        phone: String(data.phone).trim(),
+        region: data.region,
+        district: data.district,
+        experience: Number(data.experience),
+        age: Number(data.age),
+        bio: data.bio.trim(),
+        languages: data.languages
+          .split(",")
+          .map((l) => l.trim())
+          .filter(Boolean),
+        photo,
+      });
+      toast.success("Guide profile updated.");
+      setOpen(false);
       await refetch();
-    } catch (err) {
-      toast.error(err.message);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   if (isLoading) return <Loading />;
-
-  const isUpdateDisabled =
-    loading || (Object.keys(dirtyFields).length === 0 && selectedFile === null);
+  if (!info) return null;
 
   return (
-    <div className="px-4">
-      <h2 className="text-3xl font-bold mb-6 text-primary">
-        Manage Guide Profile
-      </h2>
+    <div>
+      <PageHeader
+        title="Guide profile"
+        description="This is what travelers see before they choose you as their guide."
+        actions={
+          <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
+            <LuPencil size={16} aria-hidden="true" /> Edit profile
+          </button>
+        }
+      />
 
-      <div className="bg-white shadow p-6 rounded-lg">
-        <div className="flex flex-col gap-6">
-          <img
-            src={preview}
-            alt="Guide"
-            className="w-40 h-40 rounded-full object-cover border-4 border-primary"
-          />
-          <div className="space-y-2">
-            <p>
-              <strong>Name:</strong> {guideInfo.name}
-            </p>
-            <p>
-              <strong>Email:</strong> {guideInfo.email}
-            </p>
-            <p>
-              <strong>Phone:</strong> {guideInfo.phone}
-            </p>
-            <p>
-              <strong>Region:</strong> {guideInfo.region}
-            </p>
-            <p>
-              <strong>District:</strong> {guideInfo.district}
-            </p>
-            <p>
-              <strong>Experience:</strong> {guideInfo.experience} years
-            </p>
-            <p>
-              <strong>Languages:</strong> {guideInfo.languages?.join(", ")}
-            </p>
-            <p>
-              <strong>Age:</strong> {guideInfo.age}
-            </p>
-            <p>
-              <strong>Bio:</strong> {guideInfo.bio}
-            </p>
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="btn btn-outline hover:text-white btn-primary mt-4 flex items-center gap-2"
-            >
-              <FiEdit3 /> Edit Guide Info
-            </button>
+      <div className="surface p-5 sm:p-8">
+        <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left">
+          <Avatar src={info.photo} name={info.name} size="xl" />
+          <div className="min-w-0">
+            <h2 className="font-display text-2xl font-bold tracking-tight">{info.name}</h2>
+            <p className="mt-1 text-muted">{[info.district, info.region].filter(Boolean).join(", ")}</p>
+            <p className="mt-3 max-w-2xl">{info.bio}</p>
           </div>
         </div>
+
+        <dl className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Fact icon={LuBriefcase} label="Experience">
+            {info.experience} {Number(info.experience) === 1 ? "year" : "years"}
+          </Fact>
+          <Fact icon={LuLanguages} label="Languages">
+            <span className="capitalize">{(info.languages || []).join(", ")}</span>
+          </Fact>
+          <Fact icon={LuPhone} label="Phone">
+            {info.phone}
+          </Fact>
+          <Fact icon={LuUserRound} label="Age">
+            {info.age}
+          </Fact>
+          <Fact icon={LuMapPin} label="Location">
+            {[info.district, info.region].filter(Boolean).join(", ")}
+          </Fact>
+          <Fact icon={LuCalendarDays} label="Guiding since">
+            {formatDate(info.tourGuideAt)}
+          </Fact>
+        </dl>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/30"
-            onClick={() => !loading && setIsModalOpen(false)}
-          />
-          <div className="fixed inset-0 z-50 flex justify-center items-center px-4">
-            <div className="bg-white p-6 rounded-lg max-w-xl w-full shadow-lg max-h-[90vh] overflow-y-auto relative">
-              <button
-                className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
-                onClick={() => !loading && setIsModalOpen(false)}
-                aria-label="Close modal"
-              >
-                <FiX size={24} />
-              </button>
-              <h3 className="text-xl font-bold text-center mb-4">
-                Update Guide Info
-              </h3>
+      <p className="mt-4 text-sm text-muted">
+        Want to see it as a traveler would?{" "}
+        <Link to="/allTrips" className="font-semibold text-primary underline-offset-4 hover:underline">
+          Browse trips
+        </Link>{" "}
+        and open any guide card.
+      </p>
 
-              {/* Form */}
-              <form
-                onSubmit={handleSubmit(handleUpdateGuideInfo)}
-                className="space-y-4"
-              >
-                {/* Photo */}
-                <div>
-                  <label className="block mb-1 font-semibold">Photo</label>
-                  <img
-                    src={localPreview}
-                    alt="Preview"
-                    className="w-24 h-24 rounded-full mb-2 object-cover border border-gray-300"
-                  />
-                  {/* Hidden file input */}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    id="photoUpload"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                  {/* Button to trigger file input */}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      document.getElementById("photoUpload").click()
-                    }
-                    className="btn btn-outline btn-primary"
-                  >
-                    Change Profile Image
-                  </button>
-                </div>
-
-                {/* Name */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Name
-                  </label>
-                  <input
-                    {...register("name", { required: "Name is required" })}
-                    className="input input-bordered w-full"
-                    placeholder="Name"
-                  />
-                  {errors.name && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.name.message}</p>
-                  )}
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Phone
-                  </label>
-                  <input
-                    {...register("phone", { required: "Phone is required" })}
-                    className="input input-bordered w-full"
-                    placeholder="Phone"
-                  />
-                  {errors.phone && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.phone.message}</p>
-                  )}
-                </div>
-
-                {/* Region */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Region
-                  </label>
-                  <Controller
-                    name="region"
-                    control={control}
-                    rules={{ required: "Region is required" }}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        options={regions.map((r) => ({ value: r, label: r }))}
-                        placeholder="Select Region"
-                      />
-                    )}
-                  />
-                  {errors.region && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.region.message}</p>
-                  )}
-                </div>
-
-                {/* District */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    District
-                  </label>
-                  <Controller
-                    name="district"
-                    control={control}
-                    rules={{ required: "District is required" }}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        options={getDistrictOptions()}
-                        placeholder="Select District"
-                        isDisabled={!selectedRegion}
-                      />
-                    )}
-                  />
-                  {errors.district && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.district.message}</p>
-                  )}
-                </div>
-
-                {/* Experience */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Experience
-                  </label>
-                  <input
-                    type="number"
-                    {...register("experience", {
-                      required: "Experience is required",
-                    })}
-                    className="input input-bordered w-full"
-                    placeholder="Experience (years)"
-                  />
-                  {errors.experience && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.experience.message}</p>
-                  )}
-                </div>
-
-                {/* Age */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Age
-                  </label>
-                  <input
-                    type="number"
-                    {...register("age", {
-                      required: "Age is required",
-                      validate: (value) =>
-                        value >= 18 || "Age must be at least 18",
-                    })}
-                    className="input input-bordered w-full"
-                    placeholder="Age"
-                  />
-                  {errors.age && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.age.message}</p>
-                  )}
-                </div>
-
-                {/* Languages */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Languages
-                  </label>
-                  <input
-                    {...register("languages", {
-                      required: "Languages are required",
-                    })}
-                    className="input input-bordered w-full"
-                    placeholder="Languages (comma-separated)"
-                  />
-                  {errors.languages && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.languages.message}</p>
-                  )}
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <label className="label font-semibold mt-4 mb-2 text-sm">
-                    Bio
-                  </label>
-                  <textarea
-                    {...register("bio", { required: "Bio is required" })}
-                    className="textarea textarea-bordered w-full resize-none"
-                    placeholder="Bio"
-                  />
-                  {errors.bio && (
-                    <p className="text-red-500 text-xs font-semibold mt-2">{errors.bio.message}</p>
-                  )}
-                </div>
-
-                <div className="flex justify-end gap-3 mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="btn btn-outline"
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary text-white"
-                    disabled={isUpdateDisabled}
-                  >
-                    {loading ? (
-                      <span className="loading loading-spinner text-primary"></span>
-                    ) : (
-                      "Update"
-                    )}
-                  </button>
-                </div>
-              </form>
+      <Modal
+        open={open}
+        onClose={() => !saving && setOpen(false)}
+        title="Edit guide profile"
+        size="lg"
+        footer={
+          <>
+            <button type="button" className="btn btn-ghost" disabled={saving} onClick={() => setOpen(false)}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="guide-form"
+              className="btn btn-primary"
+              disabled={saving || (!isDirty && !file)}
+            >
+              {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save changes"}
+            </button>
+          </>
+        }
+      >
+        <form id="guide-form" onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-5 md:grid-cols-2">
+          <div className="flex items-center gap-4 md:col-span-2">
+            <Avatar src={preview} name={info.name} size="xl" />
+            <div>
+              <label htmlFor="guidePhoto" className="btn btn-outline btn-sm cursor-pointer">
+                Change photo
+              </label>
+              <input id="guidePhoto" type="file" accept="image/*" className="sr-only" onChange={handleFile} />
             </div>
           </div>
-        </>
-      )}
+
+          <FormField label="Name" htmlFor="g-name" required error={errors.name?.message}>
+            <input id="g-name" className="input w-full" {...register("name", { required: "Name is required." })} />
+          </FormField>
+          <FormField label="Phone" htmlFor="g-phone" required error={errors.phone?.message}>
+            <input id="g-phone" type="tel" className="input w-full" {...register("phone", { required: "Phone is required." })} />
+          </FormField>
+          <FormField label="Region" htmlFor="g-region" required error={errors.region?.message}>
+            <select
+              id="g-region"
+              className="select w-full"
+              {...register("region", {
+                required: "Select a region.",
+                onChange: () => setValue("district", "", { shouldDirty: true }),
+              })}
+            >
+              <option value="">Select region</option>
+              {regions.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="District" htmlFor="g-district" required error={errors.district?.message}>
+            <select
+              id="g-district"
+              className="select w-full"
+              disabled={!region}
+              {...register("district", { required: "Select a district." })}
+            >
+              <option value="">Select district</option>
+              {districtOptions.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Experience (years)" htmlFor="g-exp" required error={errors.experience?.message}>
+            <input
+              id="g-exp"
+              type="number"
+              min={0}
+              className="input w-full"
+              {...register("experience", {
+                required: "Enter your experience.",
+                validate: (v) => Number(v) >= 0 || "Must be 0 or more.",
+              })}
+            />
+          </FormField>
+          <FormField label="Age" htmlFor="g-age" required error={errors.age?.message}>
+            <input
+              id="g-age"
+              type="number"
+              className="input w-full"
+              {...register("age", {
+                required: "Enter your age.",
+                validate: (v) => Number(v) >= 18 || "Age must be at least 18.",
+              })}
+            />
+          </FormField>
+          <FormField label="Languages" htmlFor="g-lang" required hint="Separate with commas" error={errors.languages?.message} className="md:col-span-2">
+            <input id="g-lang" className="input w-full" {...register("languages", { required: "List at least one language." })} />
+          </FormField>
+          <FormField label="Bio" htmlFor="g-bio" required error={errors.bio?.message} className="md:col-span-2">
+            <textarea id="g-bio" rows={4} className="textarea w-full resize-none" {...register("bio", { required: "Write a short bio." })} />
+          </FormField>
+        </form>
+      </Modal>
     </div>
   );
 };

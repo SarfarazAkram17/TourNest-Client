@@ -1,163 +1,125 @@
-import { useParams } from "react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Link, useParams } from "react-router";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { LuBriefcase, LuCalendarDays, LuLanguages, LuMail, LuMapPin, LuPhone } from "react-icons/lu";
 import useAxios from "../../Hooks/useAxios";
+import useDocumentTitle from "../../Hooks/useDocumentTitle";
 import Loading from "../../Components/Loading/Loading";
 import StoryCard from "../../Components/Shared/StoryCard";
-import {
-  MdKeyboardDoubleArrowRight,
-  MdOutlineKeyboardDoubleArrowLeft,
-} from "react-icons/md";
+import Avatar from "../../Components/UI/Avatar";
+import Pagination from "../../Components/UI/Pagination";
+import EmptyState from "../../Components/UI/EmptyState";
+import { formatDate } from "../../utils/format";
+
+const Fact = ({ icon: Icon, label, children }) => (
+  <div className="flex items-start gap-3">
+    <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <Icon size={18} aria-hidden="true" />
+    </span>
+    <div className="min-w-0">
+      <p className="text-xs text-muted">{label}</p>
+      <div className="break-words text-sm font-semibold">{children}</div>
+    </div>
+  </div>
+);
 
 const TourGuideProfile = () => {
   const { id } = useParams();
   const axiosInstance = useAxios();
   const [page, setPage] = useState(1);
 
-  const { data: tourGuide, isLoading: isLoadingGuide } = useQuery({
+  const { data: guide, isLoading, isError } = useQuery({
     queryKey: ["tourGuide", id],
-    queryFn: async () => {
-      const res = await axiosInstance.get(`/users/tour-guide/${id}`);
-      return res.data;
-    },
+    queryFn: async () => (await axiosInstance.get(`/users/tour-guide/${id}`)).data,
+    retry: false,
+  });
+  const info = guide?.guideInfo;
+  useDocumentTitle(info?.name || "Tour guide");
+
+  const { data: storyData, isLoading: storiesLoading } = useQuery({
+    queryKey: ["tourGuide-stories", info?.email, page],
+    queryFn: async () =>
+      (await axiosInstance.get("/stories", { params: { email: info.email, page } })).data,
+    placeholderData: keepPreviousData,
+    enabled: !!info?.email,
   });
 
-  const { data, isLoading: isLoadingStories } = useQuery({
-    queryKey: ["tourGuide-stories", page],
-    queryFn: async () => {
-      const email = tourGuide?.guideInfo?.email;
-
-      const res = await axiosInstance.get(`/stories`, {
-        params: { email, page },
-      });
-      return res.data;
-    },
-    keepPreviousData: true,
-    enabled: !!tourGuide?.guideInfo?.email,
-  });
-
-  const stories = data?.stories || [];
-  const total = data?.total || 0;
-  const totalPages = Math.ceil(total / data?.limit);
-
-  const handlePageChange = (newPage) => setPage(newPage);
-
-  if (isLoadingGuide || isLoadingStories) {
-    return <Loading />;
+  if (isLoading) return <Loading label="Loading guide profile" />;
+  if (isError || !info) {
+    return (
+      <div className="container-page py-16">
+        <EmptyState title="Guide not found" description="This profile may no longer be available.">
+          <Link to="/" className="btn btn-primary">
+            Back to home
+          </Link>
+        </EmptyState>
+      </div>
+    );
   }
 
+  const stories = storyData?.stories || [];
+  const totalPages = Math.ceil((storyData?.total || 0) / (storyData?.limit || 12));
+
   return (
-    <div className="max-w-7xl mx-auto px-4 my-7">
-      {/* Profile Section */}
-      <div className="flex flex-col items-center text-center space-y-4">
-        <img
-          src={tourGuide.guideInfo.photo}
-          alt={tourGuide.guideInfo.name}
-          className="w-40 h-40 rounded-full object-cover mb-4 border-4 border-primary shadow-lg"
-        />
-        <h1 className="text-4xl font-semibold text-primary">
-          {tourGuide.guideInfo.name}
-        </h1>
-        <p className="text-gray-700">
-          <span className="font-semibold">Email:</span>{" "}
-          {tourGuide.guideInfo.email}
-        </p>
-        <p className="text-lg text-gray-600 italic">
-          {tourGuide.guideInfo.bio}
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mt-6">
-          <div className="space-y-4">
-            <p className="text-gray-700">
-              <span className="font-semibold">Phone:</span>{" "}
-              {tourGuide.guideInfo.phone}
+    <div className="pb-14">
+      <section className="border-b border-base-content/10 bg-base-200">
+        <div className="container-page flex flex-col items-center gap-6 py-10 text-center md:flex-row md:items-center md:gap-10 md:py-14 md:text-left">
+          <Avatar src={info.photo} name={info.name} size="xl" className="ring-4 ring-base-100" />
+          <div className="min-w-0 flex-1">
+            <h1 className="h-section break-words">{info.name}</h1>
+            <p className="mt-2 flex items-center justify-center gap-1.5 text-muted md:justify-start">
+              <LuMapPin size={16} aria-hidden="true" />
+              {[info.district, info.region].filter(Boolean).join(", ")}
             </p>
-            <p className="text-gray-700">
-              <span className="font-semibold">Experience:</span>{" "}
-              {tourGuide.guideInfo.experience} years
-            </p>
-            <p className="text-gray-700">
-              <span className="font-semibold">Age:</span>{" "}
-              {tourGuide.guideInfo.age}
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-gray-700">
-              <span className="font-semibold">Region:</span>{" "}
-              {tourGuide.guideInfo.region}
-            </p>
-            <p className="text-gray-700">
-              <span className="font-semibold">District:</span>{" "}
-              {tourGuide.guideInfo.district}
-            </p>
-            <p className="text-gray-700 capitalize">
-              <span className="font-semibold">Languages:</span>{" "}
-              {tourGuide.guideInfo.languages.join(", ")}
-            </p>
+            {info.bio && <p className="mt-4 max-w-2xl text-base sm:text-lg">{info.bio}</p>}
+            <Link to="/allTrips" className="btn btn-primary mt-6">
+              Browse trips to book with {info.name?.split(" ")[0]}
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Tour Guide Stories Section */}
-      <div className="mt-16">
-        <h2 className="text-3xl md:text-4xl text-primary text-center font-semibold mb-10">
-          Stories Shared by {tourGuide.guideInfo.name}
-        </h2>
+      <section className="container-page mt-10">
+        <div className="surface grid gap-6 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+          <Fact icon={LuBriefcase} label="Experience">
+            {info.experience} {Number(info.experience) === 1 ? "year" : "years"}
+          </Fact>
+          <Fact icon={LuLanguages} label="Languages">
+            <span className="capitalize">{(info.languages || []).join(", ") || "-"}</span>
+          </Fact>
+          <Fact icon={LuCalendarDays} label="Guiding since">
+            {formatDate(info.tourGuideAt)}
+          </Fact>
+          <Fact icon={LuMail} label="Email">
+            <a href={`mailto:${info.email}`} className="underline-offset-4 hover:underline">
+              {info.email}
+            </a>
+          </Fact>
+          <Fact icon={LuPhone} label="Phone">
+            <a href={`tel:${info.phone}`} className="underline-offset-4 hover:underline">
+              {info.phone}
+            </a>
+          </Fact>
+        </div>
+      </section>
 
-        {stories.length === 0 ? (
-          <p className="text-center text-lg text-gray-700">
-            No Stories Shared yet.
-          </p>
+      <section className="container-page mt-14">
+        <h2 className="h-page mb-6">Stories by {info.name?.split(" ")[0]}</h2>
+        {storiesLoading ? (
+          <Loading className="min-h-40" />
+        ) : stories.length === 0 ? (
+          <EmptyState title="No stories yet" description="This guide hasn't shared a story so far." />
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {stories.map((story) => (
                 <StoryCard key={story._id} story={story} />
               ))}
             </div>
-
-            {/* Pagination */}
-            <div className="flex justify-center mt-10 gap-2 flex-wrap">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className={`btn btn-sm ${
-                  page === 1
-                    ? "btn-disabled text-black/40"
-                    : "btn-primary text-white"
-                }`}
-              >
-                <MdOutlineKeyboardDoubleArrowLeft size={20} />
-              </button>
-
-              {[...Array(totalPages).keys()].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => handlePageChange(n + 1)}
-                  className={`btn btn-sm ${
-                    page === n + 1 ? "btn-primary text-white" : "btn-outline"
-                  }`}
-                >
-                  {n + 1}
-                </button>
-              ))}
-
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages || totalPages === 0}
-                className={`btn btn-sm ${
-                  page === totalPages || totalPages === 0
-                    ? "btn-disabled text-black/40"
-                    : "btn-primary text-white"
-                }`}
-              >
-                <MdKeyboardDoubleArrowRight size={20} />
-              </button>
-            </div>
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           </>
         )}
-      </div>
+      </section>
     </div>
   );
 };

@@ -1,194 +1,167 @@
-import { useState, useEffect } from "react";
-import Select from "react-select";
-import { useQuery } from "@tanstack/react-query";
-import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import { useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { LuUsers } from "react-icons/lu";
 import useAuth from "../../../Hooks/useAuth";
-import Loading from "../../../Components/Loading/Loading";
-import { MdKeyboardDoubleArrowRight, MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
+import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import useDebounce from "../../../Hooks/useDebounce";
+import useDocumentTitle from "../../../Hooks/useDocumentTitle";
+import PageHeader from "../../../Components/UI/PageHeader";
+import SearchInput from "../../../Components/UI/SearchInput";
+import Pagination from "../../../Components/UI/Pagination";
+import EmptyState from "../../../Components/UI/EmptyState";
+import Avatar from "../../../Components/UI/Avatar";
+import { RoleBadge } from "../../../Components/UI/StatusBadge";
+import { ListSkeleton } from "../../../Components/UI/Skeletons";
+import { formatDate } from "../../../utils/format";
 
-const searchOptions = [
-  { value: "name", label: "Search by Name" },
-  { value: "email", label: "Search by Email" },
-];
+const PAGE_SIZE = 10;
 
-const roleOptions = [
-  { value: "", label: "All Roles" },
-  { value: "tourist", label: "Tourist" },
-  { value: "tour guide", label: "Tour Guide" },
-  { value: "admin", label: "Admin" },
+const ROLE_TABS = [
+  { value: "", label: "Everyone" },
+  { value: "tourist", label: "Tourists" },
+  { value: "tour guide", label: "Guides" },
+  { value: "admin", label: "Admins" },
 ];
 
 const ManageUsers = () => {
+  useDocumentTitle("Users");
   const axiosSecure = useAxiosSecure();
   const { userEmail } = useAuth();
 
-  const [searchType, setSearchType] = useState(searchOptions[0]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState(roleOptions[0]);
+  const [searchType, setSearchType] = useState("name");
+  const [searchInput, setSearchInput] = useState("");
+  const [role, setRole] = useState("");
   const [page, setPage] = useState(1);
+  const search = useDebounce(searchInput.trim(), 350);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["users", searchType.value, searchTerm, roleFilter.value, page],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/users?email=${userEmail}`, {
-        params: {
-          page,
-          limit: 10,
-          searchType: searchType.value,
-          search: searchTerm,
-          role: roleFilter.value,
-        },
-      });
-      return res.data;
-    },
-    keepPreviousData: true,
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["users", searchType, search, role, page],
+    queryFn: async () =>
+      (
+        await axiosSecure.get(`/users?email=${userEmail}`, {
+          params: { page, limit: PAGE_SIZE, searchType, search, role },
+        })
+      ).data,
+    placeholderData: keepPreviousData,
+    enabled: !!userEmail,
   });
 
   const users = data?.users || [];
-  const totalPages = Math.ceil((data?.total || 0) / 10);
-
-  useEffect(() => {
-    refetch();
-  }, [searchTerm, searchType, roleFilter, page]);
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setPage(1);
-  };
-
-  const handleSearchTypeChange = (selected) => {
-    setSearchType(selected);
-    setSearchTerm("");
-    setPage(1);
-  };
-
-  const handleRoleFilterChange = (selected) => {
-    setRoleFilter(selected);
-    setPage(1);
-  };
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-  };
+  const totalPages = Math.ceil((data?.total || 0) / PAGE_SIZE);
+  const counts = data?.counts || {};
 
   return (
-    <div className="px-4">
-      <h2 className="text-2xl font-bold mb-4 text-center text-primary">
-        Manage Users
-      </h2>
+    <div>
+      <PageHeader title="Users" description="Everyone who has joined TourNest." />
 
-      <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
-        <Select
-          options={searchOptions}
-          value={searchType}
-          onChange={handleSearchTypeChange}
-          className="w-full md:w-1/3"
-        />
-        <label className="input input-bordered w-full md:w-1/3">
-          <svg
-            className="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
+      <div className="surface p-4 sm:p-5">
+        <div className="grid gap-3 sm:grid-cols-[10rem_1fr]">
+          <select
+            className="select w-full"
+            value={searchType}
+            onChange={(e) => {
+              setSearchType(e.target.value);
+              setPage(1);
+            }}
+            aria-label="Search by"
           >
-            <g
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeWidth="2.5"
-              fill="none"
-              stroke="currentColor"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </g>
-          </svg>
-          <input
-            type="search"
-            required
-            placeholder={`Search by ${searchType.value}`}
-            value={searchTerm}
-            onChange={handleSearchChange}
+            <option value="name">Search by name</option>
+            <option value="email">Search by email</option>
+          </select>
+          <SearchInput
+            value={searchInput}
+            onChange={(v) => {
+              setSearchInput(v);
+              setPage(1);
+            }}
+            placeholder={`Search by ${searchType}`}
           />
-        </label>
+        </div>
 
-        <Select
-          options={roleOptions}
-          value={roleFilter}
-          onChange={handleRoleFilterChange}
-          className="w-full md:w-1/3"
-        />
-      </div>
+        <div className="scroll-thin -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Filter by role">
+          {ROLE_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              role="tab"
+              aria-selected={role === tab.value}
+              onClick={() => {
+                setRole(tab.value);
+                setPage(1);
+              }}
+              className={`btn btn-sm shrink-0 rounded-full ${
+                role === tab.value ? "btn-primary" : "btn-ghost border border-base-content/15"
+              }`}
+            >
+              {tab.label}
+              {counts[tab.value || "all"] !== undefined && (
+                <span className="tabular-nums opacity-70">{counts[tab.value || "all"]}</span>
+              )}
+            </button>
+          ))}
+        </div>
 
-      {isLoading ? (
-        <Loading />
-      ) : users.length === 0 ? (
-        <p className="text-center mt-10 text-gray-600 text-lg font-medium">
-          No users found. Try a different role or search by {searchType.value}.
-        </p>
-      ) : (
-        <>
-          <div className="overflow-x-auto border border-base-content/5 rounded-lg">
-            <table className="table w-full">
-              <thead>
-                <tr className="bg-base-200">
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, i) => (
-                  <tr key={user._id}>
-                    <td>{(page - 1) * 10 + i + 1}</td>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td className="capitalize">{user.role}</td>
-                  </tr>
+        <div className={`mt-5 transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+          {isLoading ? (
+            <ListSkeleton rows={6} />
+          ) : users.length === 0 ? (
+            <EmptyState
+              icon={LuUsers}
+              title="No users found"
+              description={`Try a different ${searchType} or role filter.`}
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <>
+              <div className="scroll-thin hidden overflow-x-auto md:block">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u._id}>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <Avatar src={u.photo} name={u.name} size="sm" />
+                            <div className="min-w-0">
+                              <p className="max-w-[16rem] truncate font-semibold">{u.name}</p>
+                              <p className="max-w-[16rem] truncate text-xs text-muted">{u.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <RoleBadge role={u.role} />
+                        </td>
+                        <td className="whitespace-nowrap">{formatDate(u.createdAt || u.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <ul className="divide-y divide-base-content/10 md:hidden">
+                {users.map((u) => (
+                  <li key={u._id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                    <Avatar src={u.photo} name={u.name} size="md" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold">{u.name}</p>
+                      <p className="truncate text-xs text-muted">{u.email}</p>
+                    </div>
+                    <RoleBadge role={u.role} />
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </ul>
+            </>
+          )}
+        </div>
 
-          <div className="flex flex-wrap justify-center mt-6 gap-2">
-            {/* 🔧 Previous Button with Icon */}
-            <button
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-              className={`btn btn-sm ${
-                page === 1 ? "btn-disabled text-black/40" : "btn-primary text-white"
-              }`}
-            >
-              <MdOutlineKeyboardDoubleArrowLeft size={20} />
-            </button>
-
-            {/* Page number buttons */}
-            {[...Array(totalPages).keys()].map((n) => (
-              <button
-                key={n}
-                onClick={() => handlePageChange(n + 1)}
-                className={`btn btn-sm ${
-                  page === n + 1 ? "btn-primary text-white" : "btn-outline"
-                }`}
-              >
-                {n + 1}
-              </button>
-            ))}
-
-            {/* 🔧 Next Button with Icon */}
-            <button
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages || totalPages === 0}
-              className={`btn btn-sm ${
-                page === totalPages || totalPages === 0
-                  ? "btn-disabled text-black/40"
-                  : "btn-primary text-white"
-              }`}
-            >
-              <MdKeyboardDoubleArrowRight size={20} />
-            </button>
-          </div>
-        </>
-      )}
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      </div>
     </div>
   );
 };
